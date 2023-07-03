@@ -3,14 +3,17 @@
 import React, { useEffect, useState } from 'react'
 import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
-import User from '../components/user';
 import { BsFillChatDotsFill } from "react-icons/bs"
 import { MdAccountCircle } from "react-icons/md"
 import { AiOutlineUserAdd } from 'react-icons/ai';
 import Chat from '../components/Chat';
 import Account from '../components/Account';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
+import { addFriendValidator } from '../components/addFriendValidator';
+import { z } from 'zod';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from "@hookform/resolvers/zod"
+import { toast } from 'react-hot-toast';
 
 export default function Dashboard() {
     const { data: session } = useSession()
@@ -18,7 +21,7 @@ export default function Dashboard() {
     const [logOutText, setLogOutText] = useState("Log Out")
     const [tabSelected, setTabSelected] = useState("")
     const [addUser, setAddUser] = useState("")
-    const [users, setUsers] = useState()
+    const [showSuccess, setShowSuccess] = useState(false)
     const signOutUser = async () => {
         await signOut()
         setLogOutText("Logging Out...")
@@ -32,10 +35,62 @@ export default function Dashboard() {
         }
     })
 
+    const { setError, formState: { errors } } = useForm({
+        resolver: zodResolver(addFriendValidator)
+    })
 
-    const onSubmit = async () => {
-        console.log(addUser)
-        axios.post("/api/user/getid", {email: addUser}).then((response) => console.log(response.data.id))
+
+    const addFriend = async (email) => {
+        try {
+            const validateEmail = addFriendValidator.parse({ email })
+            console.log(validateEmail)
+            await axios.post("/api/user/addfriend", { email: validateEmail.email }).then((response) => console.log(response.data.id))
+            setShowSuccess(true)
+            toast.success("Friend Request Sent", {
+                style: {
+                    borderRadius: '10px',
+                    background: '#333',
+                    color: '#fff',
+                }
+            })
+        } catch (e) {
+            if (e instanceof z.ZodError) {
+                setError("email", { message: e.message })
+                toast.error("Invalid email", {
+                    style: {
+                        borderRadius: '10px',
+                        background: '#333',
+                        color: '#fff',
+                    }
+                })
+                return
+            }
+
+            if (e instanceof AxiosError) {
+                setError("email", { message: e?.response?.data })
+                toast.error(errors?.email?.message, {
+                    style: {
+                        borderRadius: '10px',
+                        background: '#333',
+                        color: '#fff',
+                    }
+                })
+                return
+            }
+
+            setError("email", { message: "Something went wrong" })
+            toast.error("Something went wrong", {
+                style: {
+                    borderRadius: '10px',
+                    background: '#333',
+                    color: '#fff',
+                }
+            })
+        }
+    }
+
+    const onSubmit = () => {
+        addFriend(addUser)
     }
     return (
         <div className='w-screen h-screen flex'>
@@ -47,19 +102,20 @@ export default function Dashboard() {
                 </div>
     </div> */}
             <div className='w-1/5 h-screen flex flex-col items-center justify-between py-5 bg-slate-800'>
-                <div>
-                    <p className='text-xl'>Chat App</p>
+                <div className='flex flex-col justify-center items-center'>
+                    <p className='text-xl mb-2'>Chat App</p>
+                    <p>Signed in as: {session?.user?.name}</p>
                 </div>
                 <div className='flex flex-col items-start w-full '>
-                    <div className='flex bg-inherit hover:bg-slate-600 p-3 w-full cursor-pointer select-none flex items-center tab-container' onClick={() => setTabSelected("Chat")}>
+                    <div className='flex bg-inherit hover:bg-slate-600 p-3 w-full cursor-pointer select-none items-center tab-container' onClick={() => setTabSelected("Chat")}>
                         <BsFillChatDotsFill size={24} />
                         <p className='ml-5 tab-text'>Chat</p>
                     </div>
-                    <div className='flex bg-inherit hover:bg-slate-600 p-3 w-full cursor-pointer select-none flex items-center tab-container' onClick={() => setTabSelected("Account")}>
+                    <div className='flex bg-inherit hover:bg-slate-600 p-3 w-full cursor-pointer select-none items-center tab-container' onClick={() => setTabSelected("Account")}>
                         <MdAccountCircle size={24} />
                         <p className='ml-5 tab-text'>Account</p>
                     </div>
-                    <div className='flex bg-inherit hover:bg-slate-600 p-3 w-full cursor-pointer select-none flex items-center tab-container' onClick={() => {
+                    <div className='flex bg-inherit hover:bg-slate-600 p-3 w-full cursor-pointer select-none items-center tab-container' onClick={() => {
                         window.my_modal_2.showModal()
                         setTabSelected("")
                     }}>
@@ -69,9 +125,9 @@ export default function Dashboard() {
                     <dialog id="my_modal_2" className="modal">
                         <form method="dialog" className="modal-box">
                             <h3 className="font-bold text-lg">Start Conversation</h3>
-                                <input type="text" placeholder="Type Email" className="input input-bordered w-full mt-3" value={addUser} onChange={(e) => setAddUser(e.target.value)}/>
+                            <input type="text" placeholder="Type Email" className="input input-bordered w-full mt-3" onClick={() => onSubmit} value={addUser} onChange={(e) => setAddUser(e.target.value)} />
                             <div className="modal-action">
-                                <button className="btn btn-outline btn-secondary" onClick={() => onSubmit()}>Add User</button>
+                                <button className="btn btn-outline btn-secondary" onClick={() => onSubmit(addUser)}>Add User</button>
                                 <button className="btn">Close</button>
                             </div>
                         </form>
@@ -95,6 +151,8 @@ export default function Dashboard() {
                 {tabSelected === "Chat" && <Chat />}
                 {tabSelected === "Account" && <Account />}
                 {/* {tabSelected === "Add Friends" && <Conversation />} */}
+                {/* {errors.email && <p className='text-red-600'>{errors.email?.message}</p>}
+                {showSuccess ? <p className='text-green-600'>Friend Request Sent</p> : null} */}
             </div>
         </div>
     )

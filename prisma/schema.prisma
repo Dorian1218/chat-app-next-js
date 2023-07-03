@@ -21,7 +21,6 @@ model User {
   updatedAt      DateTime  @updatedAt
   accounts       Account[]
 
-
 }
 
 model Account {
