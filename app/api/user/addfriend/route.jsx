@@ -9,30 +9,41 @@ export async function POST(request) {
     const { email } = body
     const session = await getServerSession(authOptions)
 
-    const personMakingRequest = await prisma.user.findUnique({
-        where: {
-            email: session?.user?.email
-        }
-    })
-
+    if (!session) {
+        return new Response("Unauthorized Request", { status: 401 })
+    }
 
     const user = await prisma.user.findUnique({
         where: {
             email: email
         }
     })
-
+    
     if (user === null) {
-        return new Response("User does not exist", { status: 400 })
+        console.log("true")
+        return new Response("User does not exist", { status: 404 })
     }
 
-    if (!session) {
-        return new Response("Unauthorized Request", { status: 400 })
-    }
+    const personMakingRequest = await prisma.user.findUnique({
+        where: {
+            email: session?.user?.email
+        }
+    }) 
 
     if (user.id === personMakingRequest.id) {
         return new Response("You cannot start a conversation with yourself", { status: 400 })
     }
 
-    return NextResponse.json(user?.id)
+    const friendRequest = await prisma.friend.create({
+        data: {
+            userMakingRequestEmail: session?.user?.email,
+            userMakingRequestName: personMakingRequest.name,
+            userMakingRequestId: personMakingRequest.id,
+            userMakingRequestPhoto: personMakingRequest.image,
+            requestGoingtoEmail: user.email,
+            requestGoingtoId: user.id
+        }
+    })
+
+    return NextResponse.json(friendRequest)
 }

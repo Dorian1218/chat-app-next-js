@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { BsFillChatDotsFill } from "react-icons/bs"
 import { MdAccountCircle } from "react-icons/md"
 import { AiOutlineUserAdd } from 'react-icons/ai';
+import {FaUserFriends} from "react-icons/fa"
 import Chat from '../components/Chat';
 import Account from '../components/Account';
 import axios, { AxiosError } from 'axios';
@@ -14,6 +15,7 @@ import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from "@hookform/resolvers/zod"
 import { toast } from 'react-hot-toast';
+import FriendRequest from '../components/FriendRequest';
 
 export default function Dashboard() {
     const { data: session } = useSession()
@@ -21,6 +23,7 @@ export default function Dashboard() {
     const [logOutText, setLogOutText] = useState("Log Out")
     const [tabSelected, setTabSelected] = useState("")
     const [addUser, setAddUser] = useState("")
+    const [incomingFriends, setIncomingFriends] = useState([])
     const [showSuccess, setShowSuccess] = useState(false)
     const signOutUser = async () => {
         await signOut()
@@ -33,7 +36,14 @@ export default function Dashboard() {
         if (session?.user == undefined) {
             window.history.back()
         }
-    })
+        const getFriends = async () => {
+            await axios.post("/api/user/getfriendrequest", { email: session?.user?.email }).then((response) => {
+                console.log(response.data)
+                setIncomingFriends(response.data)
+            })
+        }
+        getFriends()
+    }, [])
 
     const { setError, formState: { errors } } = useForm({
         resolver: zodResolver(addFriendValidator)
@@ -44,7 +54,7 @@ export default function Dashboard() {
         try {
             const validateEmail = addFriendValidator.parse({ email })
             console.log(validateEmail)
-            await axios.post("/api/user/addfriend", { email: validateEmail.email }).then((response) => console.log(response.data.id))
+            await axios.post("/api/user/addfriend", { email: validateEmail.email }).then((response) => console.log(response.data))
             setShowSuccess(true)
             toast.success("Friend Request Sent", {
                 style: {
@@ -53,6 +63,7 @@ export default function Dashboard() {
                     color: '#fff',
                 }
             })
+            setAddUser()
         } catch (e) {
             if (e instanceof z.ZodError) {
                 setError("email", { message: e.message })
@@ -86,6 +97,7 @@ export default function Dashboard() {
                     color: '#fff',
                 }
             })
+            setAddUser()
         }
     }
 
@@ -120,7 +132,12 @@ export default function Dashboard() {
                         setTabSelected("")
                     }}>
                         <AiOutlineUserAdd size={24} />
-                        <p className='ml-5 tab-text'>Start Conversations</p>
+                        <p className='ml-5 tab-text'>Add Friends</p>
+                    </div>
+                    <div className='flex bg-inherit hover:bg-slate-600 p-3 w-full cursor-pointer select-none items-center tab-container' onClick={() => setTabSelected("Friend Request")}>
+                        <FaUserFriends size={24} />
+                        <p className='ml-5 tab-text'>Friend Request</p>
+                        {incomingFriends.length > 0 && <span className="badge badge-m badge-primary indicator-item ml-3">{incomingFriends.length === 0 ? "" : incomingFriends.length}</span>}
                     </div>
                     <dialog id="my_modal_2" className="modal">
                         <form method="dialog" className="modal-box">
@@ -150,6 +167,7 @@ export default function Dashboard() {
             <div className='w-4/5 h-screen'>
                 {tabSelected === "Chat" && <Chat />}
                 {tabSelected === "Account" && <Account />}
+                {tabSelected === "Friend Request" && <FriendRequest />}
                 {/* {tabSelected === "Add Friends" && <Conversation />} */}
                 {/* {errors.email && <p className='text-red-600'>{errors.email?.message}</p>}
                 {showSuccess ? <p className='text-green-600'>Friend Request Sent</p> : null} */}

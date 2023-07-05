@@ -4,7 +4,7 @@ import {CiPaperplane} from "react-icons/ci"
 export default function Chat() {
   return (
     <div className='h-screen flex w-full'>
-      <div className='h-screen w-1/5 bg-slate-700'>
+      <div className='h-screen w-1/5 bg-slate-700 p-3'>
         <div>Chat</div>
         <div></div>
       </div>
