@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { BsFillChatDotsFill } from "react-icons/bs"
 import { MdAccountCircle } from "react-icons/md"
 import { AiOutlineUserAdd } from 'react-icons/ai';
-import {FaUserFriends} from "react-icons/fa"
+import { FaUserFriends } from "react-icons/fa"
 import Chat from '../components/Chat';
 import Account from '../components/Account';
 import axios, { AxiosError } from 'axios';
@@ -115,7 +115,14 @@ export default function Dashboard() {
     </div> */}
             <div className='w-1/5 h-screen flex flex-col items-center justify-between py-5 bg-slate-800'>
                 <div className='flex flex-col justify-center items-center'>
-                    <p className='text-xl mb-2'>Chat App</p>
+                    <div className='flex w-full justify-between'>
+                        <div className="avatar">
+                            <div className="w-8 h-8 rounded-full">
+                                <img src={session?.user.image} className='w-5 h-5' />
+                            </div>
+                        </div>
+                        <p className='text-xl mb-2'>Chat App</p>
+                    </div>
                     <p>Signed in as: {session?.user?.name}</p>
                 </div>
                 <div className='flex flex-col items-start w-full '>

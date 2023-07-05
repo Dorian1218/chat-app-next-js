@@ -7,6 +7,7 @@ import { AiOutlineCheck, AiOutlineClose } from "react-icons/ai"
 
 export default function FriendRequest() {
     const [incomingFriends, setIncomingFriends] = useState([])
+    const [friendReq, setFriendReq] = useState("")
     const defaultProfilePic = "profilepic.png"
 
     const { data: session } = useSession()
@@ -36,7 +37,17 @@ export default function FriendRequest() {
                             <button onClick={() => console.log(friend.userMakingRequestName)} className="btn btn-circle ml-3 btn-primary">
                                 <AiOutlineCheck />
                             </button>
-                            <button className="btn btn-circle ml-3 btn-error">
+                            <button className="btn btn-circle ml-3 btn-error" onClick={async () => {
+                                // setFriendReq(friend.userMakingRequestEmail)
+                                // deleteFriendRequest()
+                                console.log(friend.userMakingRequestEmail)
+                                await axios.delete("/api/user/deletefriendrequest", { email: friend.userMakingRequestEmail })
+                                axios.post("/api/user/getfriendrequest", { email: session?.user?.email }).then((response) => {
+                                    console.log(response.data)
+                                    setIncomingFriends(response.data)
+                                })
+                            }
+                            }>
                                 <AiOutlineClose />
                             </button>
                         </div>
