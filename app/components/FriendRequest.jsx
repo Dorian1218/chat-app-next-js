@@ -41,7 +41,7 @@ export default function FriendRequest() {
                                 // setFriendReq(friend.userMakingRequestEmail)
                                 // deleteFriendRequest()
                                 console.log(friend.userMakingRequestEmail)
-                                await axios.delete("/api/user/deletefriendrequest", { email: friend.userMakingRequestEmail })
+                                await axios.delete(`/api/user/deletefriendrequest/${friend.userMakingRequestEmail}`)
                                 axios.post("/api/user/getfriendrequest", { email: session?.user?.email }).then((response) => {
                                     console.log(response.data)
                                     setIncomingFriends(response.data)
