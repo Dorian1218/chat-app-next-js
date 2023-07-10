@@ -106,24 +106,18 @@ export default function Dashboard() {
     }
     return (
         <div className='w-screen h-screen flex'>
-            {/* Dashboard
-            <p>Welcome: {session?.user?.email}</p>
-            <div className="avatar">
-                <div className="w-24 rounded-full">
-                    {session?.user?.image ? <img src={session?.user?.image}/> : <img src="profilepic.png"></img>}
-                </div>
-    </div> */}
             <div className='w-1/5 h-screen flex flex-col items-center justify-between py-5 bg-slate-800'>
                 <div className='flex flex-col justify-center items-center'>
-                    <div className='flex w-full justify-between'>
+                    <div className='flex w-full justify-between items-center mb-2'>
                         <div className="avatar">
-                            <div className="w-8 h-8 rounded-full">
-                                <img src={session?.user.image} className='w-5 h-5' />
+                            <div className="w-8 h-8 rounded-full mr-2">
+                                <img src={session?.user.image ? session?.user.image : "profilepic.png"} className='w-5 h-5' />
                             </div>
                         </div>
-                        <p className='text-xl mb-2'>Chat App</p>
+                        <p className='text-xl text-center'>Chat App</p>
                     </div>
-                    <p>Signed in as: {session?.user?.name}</p>
+                    <p>Signed in as: </p>
+                    <p>{session?.user?.name}</p>
                 </div>
                 <div className='flex flex-col items-start w-full '>
                     <div className='flex bg-inherit hover:bg-slate-600 p-3 w-full cursor-pointer select-none items-center tab-container' onClick={() => setTabSelected("Chat")}>
