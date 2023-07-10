@@ -7,14 +7,15 @@ import { useState, useEffect } from 'react';
 import axios from "axios"
 import { toast } from 'react-hot-toast';
 import { signIn, useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import GoogleButton from 'react-google-button'
 
 export default function Signup() {
     const [data, setData] = useState({ name: "", email: "", password: "" })
     const [confirmPassword, setConfirmePassword] = useState("")
-    const [error, setError] = useState(false)
-    const [errorMsg, setErrorMsg] = useState("")
+    const [loading, setLoading] = useState(false)
+    const [buttonText, setButtonText] = useState("Signup")
+    const [disabled, setDisabled] = useState(false)
     const router = useRouter()
     const session = useSession()
 
@@ -35,6 +36,8 @@ export default function Signup() {
                     color: '#fff',
                 }
             })
+
+            return
         }
 
         if (!data.email || !data.name || !data.password || !confirmPassword) {
@@ -45,20 +48,55 @@ export default function Signup() {
                     color: '#fff',
                 }
             })
+
+            return
         }
 
         else {
-            axios.post("api/signup", data)
-                .then(() =>
-                    toast.success("User succesfully signed up", {
-                        style: {
-                            borderRadius: '10px',
-                            background: '#333',
-                            color: '#fff',
-                        }
-                    },
-                        signIn("credentials", { email: data.email, password: data.password, redirect: false })))
-                        .catch((e) => console.log(e.message))
+            await axios.post("api/signup", data).then(async (response) => {
+                console.log(response.data)
+                setLoading(true)
+                setButtonText("Loading")
+                setDisabled(true)
+                toast.success("User succesfully signed up", {
+                    style: {
+                        borderRadius: '10px',
+                        background: '#333',
+                        color: '#fff',
+                    }
+                },
+                await signIn("credentials", { email: data.email, password: data.password, redirect: false }))
+                setLoading(false)
+                setButtonText("Signup")
+                setDisabled(false)
+            })
+                .catch(async (e) => {
+                    // console.log(e.response.data)
+                    if (e.response.data === "Email already exist") {
+                        toast.error(e.response.data, {
+                            style: {
+                                borderRadius: '10px',
+                                background: '#333',
+                                color: '#fff',
+                            }
+                        })
+            
+                        return
+                    }
+
+                    if (!e.response.data) {
+                        toast.success("User succesfully signed up", {
+                            style: {
+                                borderRadius: '10px',
+                                background: '#333',
+                                color: '#fff',
+                            }
+                        },
+                            await signIn("credentials", { email: data.email, password: data.password, redirect: false }))
+                    }
+                })
+
+                return 
         }
     }
 
@@ -74,11 +112,14 @@ export default function Signup() {
             <div className='h-fit flex justify-center items-center flex-col relative border-indigo-600 border-2 p-5 rounded-md mb-3'>
                 <h1 className='mb-5 text-xl'>Sign Up</h1>
                 <GoogleButton onClick={() => signInWithGoogle()} className='max-w-xs' style={{ width: "70vw" }} label='Sign up with Google' />
-                <input type="email" placeholder="Email" value={data.email} onChange={(e) => setData({ ...data, email: e.target.value })} className="input input-bordered input-primary max-w-xs mb-5 mt-5" style={{ width: "70vw" }} />
-                <input type="text" placeholder="Username" value={data.name} onChange={(e) => setData({ ...data, name: e.target.value })} className="input input-bordered input-primary max-w-xs mb-5" style={{ width: "70vw" }} />
+                <input type="text" placeholder="Username" value={data.name} onChange={(e) => setData({ ...data, name: e.target.value })} className="input input-bordered input-primary max-w-xs mb-5 mt-5" style={{ width: "70vw" }} />
+                <input type="email" placeholder="Email" value={data.email} onChange={(e) => setData({ ...data, email: e.target.value })} className="input input-bordered input-primary max-w-xs mb-5" style={{ width: "70vw" }} />
                 <input type="password" placeholder="Password" value={data.password} onChange={(e) => setData({ ...data, password: e.target.value })} className="input input-bordered input-primary max-w-xs mb-5" style={{ width: "70vw" }} />
                 <input type="password" placeholder="Confirm Password" value={confirmPassword} onChange={(e) => setConfirmePassword(e.target.value)} className="input input-bordered input-primary max-w-xs mb-5" style={{ width: "70vw" }} />
-                <button className="btn btn-active btn-secondary ml-auto max-w-xs" style={{ width: "70vw" }} onClick={signUpUser}>Sign Up</button>
+                <button className="btn btn-active btn-secondary ml-auto max-w-xs" style={{ width: "70vw" }} onClick={signUpUser} disabled={disabled}>
+                {loading && <span className="loading loading-spinner"></span>}
+                    {buttonText}
+                </button>
             </div>
             <p>Already have an account? <Link href={"/login"} className='text-cyan-500 hover:text-cyan-700'>Login</Link></p>
         </div>
