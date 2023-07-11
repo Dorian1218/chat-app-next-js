@@ -1,5 +1,5 @@
 import React from 'react'
-import {CiPaperplane} from "react-icons/ci"
+import {AiOutlineSend} from "react-icons/ai"
 
 export default function Chat() {
   return (
@@ -16,7 +16,7 @@ export default function Chat() {
         <div className='w-full'></div>
         <div className='flex w-full'>
           <input type="text" placeholder="Type here" className="input input-bordered input-secondary w-full mr-3" />
-          <button className="btn btn-info"><CiPaperplane size={20}/></button>
+          <button className="btn btn-info"><AiOutlineSend size={20}/></button>
         </div>
       </div>
     </div>

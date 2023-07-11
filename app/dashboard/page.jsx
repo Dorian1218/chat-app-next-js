@@ -3,10 +3,11 @@
 import React, { useEffect, useState } from 'react'
 import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { BsFillChatDotsFill } from "react-icons/bs"
+import { BsFillChatDotsFill, BsFillPeopleFill } from "react-icons/bs"
 import { MdAccountCircle } from "react-icons/md"
 import { AiOutlineUserAdd } from 'react-icons/ai';
 import { FaUserFriends } from "react-icons/fa"
+import {LiaUserFriendsSolid} from "react-icons/lia"
 import Chat from '../components/Chat';
 import Account from '../components/Account';
 import axios, { AxiosError } from 'axios';
@@ -63,10 +64,9 @@ export default function Dashboard() {
                     color: '#fff',
                 }
             })
-            setAddUser()
+            setAddUser("")
         } catch (e) {
             if (e instanceof z.ZodError) {
-                setError("email", { message: e.message })
                 toast.error("Invalid email", {
                     style: {
                         borderRadius: '10px',
@@ -78,8 +78,7 @@ export default function Dashboard() {
             }
 
             if (e instanceof AxiosError) {
-                setError("email", { message: e?.response?.data })
-                toast.error(errors?.email?.message, {
+                toast.error(e?.response?.data, {
                     style: {
                         borderRadius: '10px',
                         background: '#333',
@@ -97,7 +96,7 @@ export default function Dashboard() {
                     color: '#fff',
                 }
             })
-            setAddUser()
+            setAddUser("")
         }
     }
 
@@ -136,7 +135,7 @@ export default function Dashboard() {
                         <p className='ml-5 tab-text'>Add Friends</p>
                     </div>
                     <div className='flex bg-inherit hover:bg-slate-600 p-3 w-full cursor-pointer select-none items-center tab-container' onClick={() => setTabSelected("Friend Request")}>
-                        <FaUserFriends size={24} />
+                        <BsFillPeopleFill size={24} />
                         <p className='ml-5 tab-text'>Friend Request</p>
                         {incomingFriends.length > 0 && <span className="badge badge-m badge-primary indicator-item ml-3">{incomingFriends.length === 0 ? "" : incomingFriends.length}</span>}
                     </div>

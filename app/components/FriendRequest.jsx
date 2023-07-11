@@ -22,6 +22,21 @@ export default function FriendRequest() {
         getFriends()
     }, [])
 
+    useEffect(() => {
+        // pusherClient.subscribe(`user:${session.user.email}:incomingfriendrequest`)
+
+        // const friendRequestHandler = () => {
+        //     console.log("new friend request")
+        // }
+
+        // pusherClient.bind("incomingfriendrequest", friendRequestHandler)
+
+        // return () => {
+        //     pusherClient.unsubscribe(`user:${session.user.email}:incomingfriendrequest`)
+        //     pusherClient.unbind("incomingfriendrequest", friendRequestHandler)
+        // }
+    })
+
     return (
         <div className='h-screen w-full flex flex-col p-3'>
             <p className='text-xl'>Friend Requests: </p>
