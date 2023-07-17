@@ -6,7 +6,7 @@ import { useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from 'next/navigation';
 
-function Home() {
+export default function Home() {
 
   const session = useSession()
   const router = useRouter()
@@ -27,5 +27,3 @@ function Home() {
     </div>
   )
 }
-
-export default Home

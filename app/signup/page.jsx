@@ -65,14 +65,14 @@ export default function Signup() {
                         color: '#fff',
                     }
                 },
-                await signIn("credentials", { email: data.email, password: data.password, redirect: false }))
+                    await signIn("credentials", { email: data.email, password: data.password, redirect: false }))
                 setLoading(false)
                 setButtonText("Signup")
                 setDisabled(false)
             })
                 .catch(async (e) => {
                     // console.log(e.response.data)
-                    if (e.response.data === "Email already exist") {
+                    if (e.response.data) {
                         toast.error(e.response.data, {
                             style: {
                                 borderRadius: '10px',
@@ -80,11 +80,11 @@ export default function Signup() {
                                 color: '#fff',
                             }
                         })
-            
+
                         return
                     }
 
-                    if (!e.response.data) {
+                    if (!e?.response?.data) {
                         toast.success("User succesfully signed up", {
                             style: {
                                 borderRadius: '10px',
@@ -96,7 +96,7 @@ export default function Signup() {
                     }
                 })
 
-                return 
+            return
         }
     }
 
@@ -109,17 +109,19 @@ export default function Signup() {
             <div className='p-10 absolute z-10 top-0 left-0'>
                 <Link href={"/"}><AiOutlineArrowLeft size={24} /></Link>
             </div>
-            <div className='h-fit flex justify-center items-center flex-col relative border-indigo-600 border-2 p-5 rounded-md mb-3'>
-                <h1 className='mb-5 text-xl'>Sign Up</h1>
-                <GoogleButton onClick={() => signInWithGoogle()} className='max-w-xs' style={{ width: "70vw" }} label='Sign up with Google' />
-                <input type="text" placeholder="Username" value={data.name} onChange={(e) => setData({ ...data, name: e.target.value })} className="input input-bordered input-primary max-w-xs mb-5 mt-5" style={{ width: "70vw" }} />
-                <input type="email" placeholder="Email" value={data.email} onChange={(e) => setData({ ...data, email: e.target.value })} className="input input-bordered input-primary max-w-xs mb-5" style={{ width: "70vw" }} />
-                <input type="password" placeholder="Password" value={data.password} onChange={(e) => setData({ ...data, password: e.target.value })} className="input input-bordered input-primary max-w-xs mb-5" style={{ width: "70vw" }} />
-                <input type="password" placeholder="Confirm Password" value={confirmPassword} onChange={(e) => setConfirmePassword(e.target.value)} className="input input-bordered input-primary max-w-xs mb-5" style={{ width: "70vw" }} />
-                <button className="btn btn-active btn-secondary ml-auto max-w-xs" style={{ width: "70vw" }} onClick={signUpUser} disabled={disabled}>
-                {loading && <span className="loading loading-spinner"></span>}
-                    {buttonText}
-                </button>
+            <div>
+                <form className='h-fit flex justify-center items-center flex-col relative border-indigo-600 border-2 p-5 rounded-md mb-3'>
+                    <h1 className='mb-5 text-xl'>Sign Up</h1>
+                    <GoogleButton onClick={() => signInWithGoogle()} className='max-w-xs' style={{ width: "70vw" }} label='Sign up with Google' />
+                    <input type="text" placeholder="Username" value={data.name} onChange={(e) => setData({ ...data, name: e.target.value })} className="input input-bordered input-primary max-w-xs mb-5 mt-5" style={{ width: "70vw" }} />
+                    <input type="email" placeholder="Email" value={data.email} onChange={(e) => setData({ ...data, email: e.target.value })} className="input input-bordered input-primary max-w-xs mb-5" style={{ width: "70vw" }} />
+                    <input type="password" placeholder="Password" value={data.password} onChange={(e) => setData({ ...data, password: e.target.value })} className="input input-bordered input-primary max-w-xs mb-5" style={{ width: "70vw" }} autoComplete='on'/>
+                    <input type="password" placeholder="Confirm Password" value={confirmPassword} onChange={(e) => setConfirmePassword(e.target.value)} className="input input-bordered input-primary max-w-xs mb-5" style={{ width: "70vw" }} autoComplete='on'/>
+                    <button className="btn btn-active btn-secondary ml-auto max-w-xs" style={{ width: "70vw" }} onClick={signUpUser} disabled={disabled}>
+                        {loading && <span className="loading loading-spinner"></span>}
+                        {buttonText}
+                    </button>
+                </form>
             </div>
             <p>Already have an account? <Link href={"/login"} className='text-cyan-500 hover:text-cyan-700'>Login</Link></p>
         </div>

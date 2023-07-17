@@ -4,6 +4,8 @@ import React, { useEffect, useState } from 'react'
 import axios from 'axios'
 import { useSession } from 'next-auth/react';
 import { AiOutlineCheck, AiOutlineClose } from "react-icons/ai"
+import { pusherClient } from '../libs/pusher';
+import { toPusherKey } from '../libs/utils';
 
 export default function FriendRequest() {
     const [incomingFriends, setIncomingFriends] = useState([])
@@ -23,19 +25,21 @@ export default function FriendRequest() {
     }, [])
 
     useEffect(() => {
-        // pusherClient.subscribe(`user:${session.user.email}:incomingfriendrequest`)
+        // pusherClient.subscribe(toPusherKey(`user:${session.user.email}:incomingfriendrequest`))
+        pusherClient.subscribe("my-channel")
 
-        // const friendRequestHandler = () => {
-        //     console.log("new friend request")
-        // }
+        const friendRequestHandler = () => {
+            console.log("new friend request")
+        }
 
-        // pusherClient.bind("incomingfriendrequest", friendRequestHandler)
+        pusherClient.bind("incoming_friend_request", friendRequestHandler)
 
-        // return () => {
-        //     pusherClient.unsubscribe(`user:${session.user.email}:incomingfriendrequest`)
-        //     pusherClient.unbind("incomingfriendrequest", friendRequestHandler)
-        // }
-    })
+        return () => {
+        //     // pusherClient.unsubscribe(toPusherKey(`user:${session.user.email}:incomingfriendrequest`))
+            pusherClient.unsubscribe("my-channel")
+            pusherClient.unbind("incoming_friend_request", friendRequestHandler)
+        }
+    }, [])
 
     return (
         <div className='h-screen w-full flex flex-col p-3'>
