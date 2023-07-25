@@ -44,10 +44,10 @@ model Account {
 
 model Friend {
   id                     String  @id @default(auto()) @map("_id") @db.ObjectId
-  userMakingRequestEmail String? @unique
+  userMakingRequestEmail String?
   userMakingRequestName  String?
   userMakingRequestId    String @db.ObjectId
   userMakingRequestPhoto String?
-  requestGoingtoEmail    String? @unique
+  requestGoingtoEmail    String?
   requestGoingtoId       String?
 }

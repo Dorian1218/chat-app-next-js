@@ -8,7 +8,7 @@ import { pusherServer } from "@/app/libs/pusherserver"
 export async function POST(request) {
     const prisma = new PrismaClient()
     const body = await request.json()
-    const { email } = body
+    const { name } = body
     const session = await getServerSession(authOptions)
 
     if (!session) {
@@ -17,11 +17,11 @@ export async function POST(request) {
 
     const user = await prisma.user.findUnique({
         where: {
-            email: email
+            name: name
         }
     })
 
-    if (user === null) {
+    if (user.length === 0) {
         console.log("true")
         return new NextResponse("User does not exist", { status: 404 })
     }
@@ -34,6 +34,17 @@ export async function POST(request) {
 
     if (user.id === personMakingRequest.id) {
         return new NextResponse("You cannot start a conversation with yourself", { status: 400 })
+    }
+
+    const otherSentRequest = await prisma.friend.findMany({
+        where: {
+            userMakingRequestEmail: user.email,
+            requestGoingtoEmail: session?.user?.email
+        }
+    })
+
+    if (otherSentRequest.length > 0) {
+        return new NextResponse("This user has already sent a friend request to you", { status: 400 })
     }
 
     const requestExist = prisma.friend.findMany({
@@ -58,7 +69,15 @@ export async function POST(request) {
         }
     })
 
-    await pusherServer.trigger("my-channel", "my-event", {message: "Hello"})
+    console.log(friendRequest)
 
+    await pusherServer.trigger(toPusherKey(`user:${user.email}:incomingfriendreq`), "incomingfriendreq", {
+        userMakingRequestEmail: session?.user?.email,
+        userMakingRequestName: personMakingRequest.name,
+        userMakingRequestId: personMakingRequest.id,
+        userMakingRequestPhoto: personMakingRequest.image,
+        requestGoingtoEmail: user.email,
+        requestGoingtoId: user.id
+    })
     return NextResponse.json(friendRequest)
 }

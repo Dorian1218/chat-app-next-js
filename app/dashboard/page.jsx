@@ -17,6 +17,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from "@hookform/resolvers/zod"
 import { toast } from 'react-hot-toast';
 import FriendRequest from '../components/FriendRequest';
+import { pusherClient } from '../libs/pusherclient';
+import { toPusherKey } from '../libs/utils';
 
 export default function Dashboard() {
     const { data: session } = useSession()
@@ -46,16 +48,33 @@ export default function Dashboard() {
         getFriends()
     }, [])
 
+    useEffect(() => {
+
+        const friendRequestHandler = ({userMakingRequestEmail, userMakingRequestName, userMakingRequestId, userMakingRequestPhoto, requestGoingtoEmail, requestGoingtoId}) => {
+            console.log("new friend request")
+            if (requestGoingtoEmail === session?.user?.email) {
+                setIncomingFriends((prev) => [...prev, {userMakingRequestEmail, userMakingRequestName, userMakingRequestId, userMakingRequestPhoto, requestGoingtoEmail, requestGoingtoId}])
+            }
+        }
+
+        const channel = pusherClient.subscribe(toPusherKey(`user:${session?.user?.email}:incomingfriendreq`))
+
+        channel.bind("incomingfriendreq", friendRequestHandler)
+
+        return () => {
+            pusherClient.unsubscribe(toPusherKey(`user:${session?.user?.email}:incomingfriendreq`))
+            channel.unbind("incomingfriendreq", friendRequestHandler)
+        }
+    }, [])
+
     const { setError, formState: { errors } } = useForm({
         resolver: zodResolver(addFriendValidator)
     })
 
 
-    const addFriend = async (email) => {
+    const addFriend = async (name) => {
         try {
-            const validateEmail = addFriendValidator.parse({ email })
-            console.log(validateEmail)
-            await axios.post("/api/user/addfriend", { email: validateEmail.email }).then((response) => console.log(response.data))
+            await axios.post("/api/user/addfriend", { name: name }).then((response) => console.log(response.data))
             setShowSuccess(true)
             toast.success("Friend Request Sent", {
                 style: {
@@ -142,7 +161,7 @@ export default function Dashboard() {
                     <dialog id="my_modal_2" className="modal">
                         <form method="dialog" className="modal-box">
                             <h3 className="font-bold text-lg">Start Conversation</h3>
-                            <input type="text" placeholder="Type Email" className="input input-bordered w-full mt-3" onClick={() => onSubmit} value={addUser} onChange={(e) => setAddUser(e.target.value)} />
+                            <input type="text" placeholder="Type Username" className="input input-bordered w-full mt-3" onClick={() => onSubmit} value={addUser} onChange={(e) => setAddUser(e.target.value)} />
                             <div className="modal-action">
                                 <button className="btn btn-outline btn-secondary" onClick={() => onSubmit(addUser)}>Add User</button>
                                 <button className="btn">Close</button>

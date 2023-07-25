@@ -6,6 +6,7 @@ import { useSession } from 'next-auth/react';
 import { AiOutlineCheck, AiOutlineClose } from "react-icons/ai"
 import { toPusherKey } from '../libs/utils';
 import { pusherClient } from '../libs/pusherclient';
+import { toast } from 'react-hot-toast';
 
 export default function FriendRequest() {
     const [incomingFriends, setIncomingFriends] = useState([])
@@ -25,22 +26,27 @@ export default function FriendRequest() {
     }, [])
 
     useEffect(() => {
-        // pusherClient.subscribe(toPusherKey(`user:${session.user.email}:incomingfriendrequest`))
 
-        const friendRequestHandler = () => {
+        const friendRequestHandler = ({userMakingRequestEmail, userMakingRequestName, userMakingRequestId, userMakingRequestPhoto, requestGoingtoEmail, requestGoingtoId}) => {
             console.log("new friend request")
+            setIncomingFriends((prev) => [...prev, {userMakingRequestEmail, userMakingRequestName, userMakingRequestId, userMakingRequestPhoto, requestGoingtoEmail, requestGoingtoId}])
+            toast.custom("You have a friend request", {
+                style: {
+                    borderRadius: '10px',
+                    background: 'alert alert-info',
+                    color: '#fff',
+                }
+            })
+            console.log(incomingFriends)
         }
 
-        const channel = pusherClient.subscribe("my-channel")
-        console.log(channel)
+        const channel = pusherClient.subscribe(toPusherKey(`user:${session?.user?.email}:incomingfriendreq`))
 
-        channel.bind("my-event", friendRequestHandler)
-        console.log(channel.bind("my-event", friendRequestHandler))
-
+        channel.bind("incomingfriendreq", friendRequestHandler)
 
         return () => {
-            pusherClient.unsubscribe("my-channel")
-            channel.unbind("my-event", friendRequestHandler)
+            pusherClient.unsubscribe(toPusherKey(`user:${session?.user?.email}:incomingfriendreq`))
+            channel.unbind("incomingfriendreq", friendRequestHandler)
         }
     }, [])
 

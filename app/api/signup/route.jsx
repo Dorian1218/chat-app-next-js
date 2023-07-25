@@ -21,11 +21,15 @@ export async function POST(request) {
         return new NextResponse("Email already used", {status: 400})
     }
 
-    const usernameExist = await prisma.user.findMany({
+    const usernameExist = await prisma.user.findUnique({
         where: {
             name: name
         }
     })
+
+    if (usernameExist) {
+        return new NextResponse("Username is taken", {status: 400})
+    }
 
     const hashedPassword = await bcrypt.hash(password, 10)
 
