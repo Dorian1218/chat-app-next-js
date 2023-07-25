@@ -1,9 +1,9 @@
 const Pusher = require("pusher")
 
 export const pusherServer = new Pusher({
-    app_id: "1640128",
-    key: "0b709d07d4be80da7280",
-    secret: "16b9ff9c0935b7f28a96",
-    cluster: "us2",
+    appId: process.env.PUSHER_APP_ID,
+    key: process.env.NEXT_PUBLIC_PUSHER_APP_KEY,
+    secret: process.env.PUSHER_SECRET,
+    cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER,
     useTLS: true
 })
