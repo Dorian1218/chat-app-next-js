@@ -30,13 +30,6 @@ export default function FriendRequest() {
         const friendRequestHandler = ({userMakingRequestEmail, userMakingRequestName, userMakingRequestId, userMakingRequestPhoto, requestGoingtoEmail, requestGoingtoId}) => {
             console.log("new friend request")
             setIncomingFriends((prev) => [...prev, {userMakingRequestEmail, userMakingRequestName, userMakingRequestId, userMakingRequestPhoto, requestGoingtoEmail, requestGoingtoId}])
-            toast.custom("You have a friend request", {
-                style: {
-                    borderRadius: '10px',
-                    background: 'alert alert-info',
-                    color: '#fff',
-                }
-            })
             console.log(incomingFriends)
         }
 
@@ -70,9 +63,16 @@ export default function FriendRequest() {
                                 // deleteFriendRequest()
                                 console.log(friend.userMakingRequestEmail)
                                 await axios.delete(`/api/user/deletefriendrequest/${friend.userMakingRequestEmail}`)
-                                axios.post("/api/user/getfriendrequest", { email: session?.user?.email }).then((response) => {
+                                await axios.post("/api/user/getfriendrequest", { email: session?.user?.email }).then((response) => {
                                     console.log(response.data)
                                     setIncomingFriends(response.data)
+                                })
+                                toast.success("Friend Request Deleted", {
+                                    style: {
+                                        borderRadius: '10px',
+                                        background: '#333',
+                                        color: '#fff',
+                                    }
                                 })
                             }
                             }>

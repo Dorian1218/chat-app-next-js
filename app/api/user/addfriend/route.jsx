@@ -21,7 +21,7 @@ export async function POST(request) {
         }
     })
 
-    if (user.length === 0) {
+    if (!user) {
         console.log("true")
         return new NextResponse("User does not exist", { status: 404 })
     }

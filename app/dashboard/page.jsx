@@ -7,7 +7,7 @@ import { BsFillChatDotsFill, BsFillPeopleFill } from "react-icons/bs"
 import { MdAccountCircle } from "react-icons/md"
 import { AiOutlineUserAdd } from 'react-icons/ai';
 import { FaUserFriends } from "react-icons/fa"
-import {LiaUserFriendsSolid} from "react-icons/lia"
+import { LiaUserFriendsSolid } from "react-icons/lia"
 import Chat from '../components/Chat';
 import Account from '../components/Account';
 import axios, { AxiosError } from 'axios';
@@ -50,20 +50,29 @@ export default function Dashboard() {
 
     useEffect(() => {
 
-        const friendRequestHandler = ({userMakingRequestEmail, userMakingRequestName, userMakingRequestId, userMakingRequestPhoto, requestGoingtoEmail, requestGoingtoId}) => {
+        const friendRequestHandler = ({ userMakingRequestEmail, userMakingRequestName, userMakingRequestId, userMakingRequestPhoto, requestGoingtoEmail, requestGoingtoId }) => {
             console.log("new friend request")
-            if (requestGoingtoEmail === session?.user?.email) {
-                setIncomingFriends((prev) => [...prev, {userMakingRequestEmail, userMakingRequestName, userMakingRequestId, userMakingRequestPhoto, requestGoingtoEmail, requestGoingtoId}])
-            }
+            setIncomingFriends((prev) => [...prev, { userMakingRequestEmail, userMakingRequestName, userMakingRequestId, userMakingRequestPhoto, requestGoingtoEmail, requestGoingtoId }])
         }
 
-        const channel = pusherClient.subscribe(toPusherKey(`user:${session?.user?.email}:incomingfriendreq`))
+        const deleteFriendHandler = async () => {
+            await axios.post("/api/user/getfriendrequest", { email: session?.user?.email }).then((response) => {
+                console.log(response.data)
+                setIncomingFriends(response.data)
+            })
+        }
 
-        channel.bind("incomingfriendreq", friendRequestHandler)
+        const channelFriendReq = pusherClient.subscribe(toPusherKey(`user:${session?.user?.email}:incomingfriendreq`))
+        const channelDeleteReq = pusherClient.subscribe(toPusherKey(`user:${session?.user?.email}:deletefriendreq`))
+
+        channelFriendReq.bind("incomingfriendreq", friendRequestHandler)
+        channelDeleteReq.bind("deletefriendreq", deleteFriendHandler)
 
         return () => {
             pusherClient.unsubscribe(toPusherKey(`user:${session?.user?.email}:incomingfriendreq`))
-            channel.unbind("incomingfriendreq", friendRequestHandler)
+            pusherClient.unsubscribe(toPusherKey(`user:${session?.user?.email}:deletefriendreq`))
+            channelFriendReq.unbind("incomingfriendreq", friendRequestHandler)
+            channelDeleteReq.unbind("deletefriendreq", deleteFriendHandler)
         }
     }, [])
 
@@ -139,24 +148,32 @@ export default function Dashboard() {
                 </div>
                 <div className='flex flex-col items-start w-full '>
                     <div className='flex bg-inherit hover:bg-slate-600 p-3 w-full cursor-pointer select-none items-center tab-container' onClick={() => setTabSelected("Chat")}>
-                        <BsFillChatDotsFill size={24} />
+                        <div>
+                            <BsFillChatDotsFill size={20} />
+                        </div>
                         <p className='ml-5 tab-text'>Chat</p>
                     </div>
                     <div className='flex bg-inherit hover:bg-slate-600 p-3 w-full cursor-pointer select-none items-center tab-container' onClick={() => setTabSelected("Account")}>
-                        <MdAccountCircle size={24} />
+                        <div>
+                            <MdAccountCircle size={20} />
+                        </div>
                         <p className='ml-5 tab-text'>Account</p>
                     </div>
                     <div className='flex bg-inherit hover:bg-slate-600 p-3 w-full cursor-pointer select-none items-center tab-container' onClick={() => {
                         window.my_modal_2.showModal()
                         setTabSelected("")
                     }}>
-                        <AiOutlineUserAdd size={24} />
+                        <div>
+                            <AiOutlineUserAdd size={20} />
+                        </div>
                         <p className='ml-5 tab-text'>Add Friends</p>
                     </div>
                     <div className='flex bg-inherit hover:bg-slate-600 p-3 w-full cursor-pointer select-none items-center tab-container' onClick={() => setTabSelected("Friend Request")}>
-                        <BsFillPeopleFill size={24} />
+                        <div>
+                            <BsFillPeopleFill size={20} />
+                        </div>
                         <p className='ml-5 tab-text'>Friend Request</p>
-                        {incomingFriends.length > 0 && <span className="badge badge-m badge-primary indicator-item ml-3">{incomingFriends.length === 0 ? "" : incomingFriends.length}</span>}
+                        {incomingFriends.length > 0 && <span className="badge badge-m badge-primary indicator-item ml-1">{incomingFriends.length === 0 ? "" : incomingFriends.length}</span>}
                     </div>
                     <dialog id="my_modal_2" className="modal">
                         <form method="dialog" className="modal-box">

@@ -2,6 +2,8 @@ import { NextResponse } from "next/server"
 import { PrismaClient } from "@prisma/client"
 import { getServerSession } from "next-auth"
 import { authOptions } from "../../../auth/[...nextauth]/route"
+import { pusherServer } from "@/app/libs/pusherserver"
+import { toPusherKey } from "@/app/libs/utils"
 
 export async function DELETE({params}) {
     const prisma = new PrismaClient()
@@ -15,6 +17,10 @@ export async function DELETE({params}) {
                 requestGoingtoEmail: session?.user?.email
         }
     })
+
+    console.log(deletedUser)
+
+    pusherServer.trigger(toPusherKey(`user:${session?.user?.email}:deletefriendreq`), "deletefriendreq", deletedUser)
 
     return NextResponse.json(deletedUser)
 }
