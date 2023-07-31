@@ -27,21 +27,37 @@ export default function FriendRequest() {
 
     useEffect(() => {
 
-        const friendRequestHandler = ({userMakingRequestEmail, userMakingRequestName, userMakingRequestId, userMakingRequestPhoto, requestGoingtoEmail, requestGoingtoId}) => {
-            console.log("new friend request")
-            setIncomingFriends((prev) => [...prev, {userMakingRequestEmail, userMakingRequestName, userMakingRequestId, userMakingRequestPhoto, requestGoingtoEmail, requestGoingtoId}])
+        const friendRequestHandler = async ({ userMakingRequestEmail, userMakingRequestName, userMakingRequestId, userMakingRequestPhoto, requestGoingtoEmail, requestGoingtoId }) => {
+            // console.log("new friend request")
+            // setIncomingFriends((prev) => [...prev, { userMakingRequestEmail, userMakingRequestName, userMakingRequestId, userMakingRequestPhoto, requestGoingtoEmail, requestGoingtoId }])
+            // console.log(incomingFriends)
+            await axios.post("/api/user/getfriendrequest", { email: session?.user?.email }).then((response) => {
+                setIncomingFriends(response.data)
+            })
+        }
+
+        const deleteFriendHandler = async () => {
+            await axios.post("/api/user/getfriendrequest", { email: session?.user?.email }).then((response) => {
+                setIncomingFriends(response.data)
+            })
+
             console.log(incomingFriends)
         }
 
-        const channel = pusherClient.subscribe(toPusherKey(`user:${session?.user?.email}:incomingfriendreq`))
+        const channelFriendReq = pusherClient.subscribe(toPusherKey(`user:${session?.user?.email}:incomingfriendreq`))
+        const channelDeleteReq = pusherClient.subscribe(toPusherKey(`user:${session?.user?.email}:deletefriendreq`))
 
-        channel.bind("incomingfriendreq", friendRequestHandler)
+        channelFriendReq.bind("incomingfriendreq", friendRequestHandler)
+        channelDeleteReq.bind("deletefriendreq", deleteFriendHandler)
 
         return () => {
             pusherClient.unsubscribe(toPusherKey(`user:${session?.user?.email}:incomingfriendreq`))
-            channel.unbind("incomingfriendreq", friendRequestHandler)
+            pusherClient.unsubscribe(toPusherKey(`user:${session?.user?.email}:deletefriendreq`))
+            channelFriendReq.unbind("incomingfriendreq", friendRequestHandler)
+            channelDeleteReq.unbind("deletefriendreq", deleteFriendHandler)
         }
     }, [])
+
 
     return (
         <div className='h-screen w-full flex flex-col p-3'>
@@ -63,10 +79,6 @@ export default function FriendRequest() {
                                 // deleteFriendRequest()
                                 console.log(friend.userMakingRequestEmail)
                                 await axios.delete(`/api/user/deletefriendrequest/${friend.userMakingRequestEmail}`)
-                                await axios.post("/api/user/getfriendrequest", { email: session?.user?.email }).then((response) => {
-                                    console.log(response.data)
-                                    setIncomingFriends(response.data)
-                                })
                                 toast.success("Friend Request Deleted", {
                                     style: {
                                         borderRadius: '10px',

@@ -50,16 +50,17 @@ export default function Dashboard() {
 
     useEffect(() => {
 
-        const friendRequestHandler = ({ userMakingRequestEmail, userMakingRequestName, userMakingRequestId, userMakingRequestPhoto, requestGoingtoEmail, requestGoingtoId }) => {
-            console.log("new friend request")
-            setIncomingFriends((prev) => [...prev, { userMakingRequestEmail, userMakingRequestName, userMakingRequestId, userMakingRequestPhoto, requestGoingtoEmail, requestGoingtoId }])
+        const friendRequestHandler = async () => {
+            await axios.post("/api/user/getfriendrequest", { email: session?.user?.email }).then((response) => {
+                setIncomingFriends(response.data)
+            })
         }
 
         const deleteFriendHandler = async () => {
             await axios.post("/api/user/getfriendrequest", { email: session?.user?.email }).then((response) => {
-                console.log(response.data)
                 setIncomingFriends(response.data)
             })
+            console.log(incomingFriends)
         }
 
         const channelFriendReq = pusherClient.subscribe(toPusherKey(`user:${session?.user?.email}:incomingfriendreq`))
@@ -173,7 +174,7 @@ export default function Dashboard() {
                             <BsFillPeopleFill size={20} />
                         </div>
                         <p className='ml-5 tab-text'>Friend Request</p>
-                        {incomingFriends.length > 0 && <span className="badge badge-m badge-primary indicator-item ml-1">{incomingFriends.length === 0 ? "" : incomingFriends.length}</span>}
+                        {incomingFriends.length > 0 && <span className="badge badge-m badge-primary indicator-item ml-1">{incomingFriends.length}</span>}
                     </div>
                     <dialog id="my_modal_2" className="modal">
                         <form method="dialog" className="modal-box">
