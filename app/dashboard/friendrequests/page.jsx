@@ -4,8 +4,8 @@ import React, { useEffect, useState } from 'react'
 import axios from 'axios'
 import { useSession } from 'next-auth/react';
 import { AiOutlineCheck, AiOutlineClose } from "react-icons/ai"
-import { toPusherKey } from '../libs/utils';
-import { pusherClient } from '../libs/pusherclient';
+import { toPusherKey } from '../../libs/utils';
+import { pusherClient } from '../../libs/pusherclient';
 import { toast } from 'react-hot-toast';
 
 export default function FriendRequest() {
@@ -29,33 +29,29 @@ export default function FriendRequest() {
     useEffect(() => {
 
         const friendRequestHandler = async ({ userMakingRequestEmail, userMakingRequestName, userMakingRequestId, userMakingRequestPhoto, requestGoingtoEmail, requestGoingtoId }) => {
-            // console.log("new friend request")
-            // setIncomingFriends((prev) => [...prev, { userMakingRequestEmail, userMakingRequestName, userMakingRequestId, userMakingRequestPhoto, requestGoingtoEmail, requestGoingtoId }])
-            console.log("new friend request")
-            await axios.post("/api/user/getfriendrequest", { email: session?.user?.email }).then((response) => {
-                setIncomingFriends(response.data)
-                console.log(response.data)
-            })
-        }
-
-        const deleteFriendHandler = async ({userMakingRequestEmail, requestGoingtoEmail}) => {
-            await axios.post("/api/user/getfriendrequest", { email: session?.user?.email }).then((response) => {
-                setIncomingFriends((prev) => prev.filter((request) => request.requestGoingtoEmail !== requestGoingtoEmail))
-            })
-
+            console.log("friend request")
+            setIncomingFriends((prev) => [...prev, { userMakingRequestEmail, userMakingRequestName, userMakingRequestId, userMakingRequestPhoto, requestGoingtoEmail, requestGoingtoId }])
             console.log(incomingFriends)
         }
 
+        // const deleteFriendHandler = async ({userMakingRequestEmail, requestGoingtoEmail}) => {
+        //     await axios.post("/api/user/getfriendrequest", { email: session?.user?.email }).then((response) => {
+        //         setIncomingFriends((prev) => prev.filter((request) => request.requestGoingtoEmail !== requestGoingtoEmail))
+        //     })
+
+        //     console.log(incomingFriends)
+        // }
+
         const channelFriendReq = pusherClient.subscribe(toPusherKey(`user:${session?.user?.email}:incomingfriendreq`))
-        const channelDeleteReq = pusherClient.subscribe(toPusherKey(`user:${session?.user?.email}:deletefriendreq`))
+        // const channelDeleteReq = pusherClient.subscribe(toPusherKey(`user:${session?.user?.email}:deletefriendreq`))
 
         channelFriendReq.bind("incomingfriendreq", friendRequestHandler)
-        channelDeleteReq.bind("deletefriendreq", deleteFriendHandler)
+        // channelDeleteReq.bind("deletefriendreq", deleteFriendHandler)
 
         return () => {
-            // pusherClient.unsubscribe(toPusherKey(`user:${session?.user?.email}:incomingfriendreq`))
+            pusherClient.unsubscribe(toPusherKey(`user:${session?.user?.email}:incomingfriendreq`))
             // pusherClient.unsubscribe(toPusherKey(`user:${session?.user?.email}:deletefriendreq`))
-            // channelFriendReq.unbind("incomingfriendreq", friendRequestHandler)
+            channelFriendReq.unbind("incomingfriendreq", friendRequestHandler)
             // channelDeleteReq.unbind("deletefriendreq", deleteFriendHandler)
         }
     }, [])
@@ -81,6 +77,7 @@ export default function FriendRequest() {
                                 // deleteFriendRequest()
                                 console.log(friend.userMakingRequestEmail)
                                 await axios.delete(`/api/user/deletefriendrequest/${friend.userMakingRequestEmail}`)
+                                setIncomingFriends((prev) => prev.filter((req) => req.userMakingRequestEmail !== friend.userMakingRequestEmail))
                                 toast.success("Friend Request Deleted", {
                                     style: {
                                         borderRadius: '10px',

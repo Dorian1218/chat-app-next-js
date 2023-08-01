@@ -79,5 +79,15 @@ export async function POST(request) {
         requestGoingtoEmail: user.email,
         requestGoingtoId: user.id
     })
+
+    await pusherServer.trigger(toPusherKey(`user:${user.email}:incomingfriendreqnum`), "incomingfriendreqnum", {
+        userMakingRequestEmail: session?.user?.email,
+        userMakingRequestName: personMakingRequest.name,
+        userMakingRequestId: personMakingRequest.id,
+        userMakingRequestPhoto: personMakingRequest.image,
+        requestGoingtoEmail: user.email,
+        requestGoingtoId: user.id
+    })
+
     return NextResponse.json(friendRequest)
 }

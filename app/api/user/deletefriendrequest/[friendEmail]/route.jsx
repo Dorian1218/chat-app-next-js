@@ -5,7 +5,7 @@ import { authOptions } from "../../../auth/[...nextauth]/route"
 import { pusherServer } from "@/app/libs/pusherserver"
 import { toPusherKey } from "@/app/libs/utils"
 
-export async function DELETE({params}) {
+export async function DELETE({ params }) {
     const prisma = new PrismaClient()
     const session = await getServerSession(authOptions)
     const friendEmail = params
@@ -13,14 +13,15 @@ export async function DELETE({params}) {
 
     const deletedUser = await prisma.friend.deleteMany({
         where: {
-                userMakingRequestEmail: friendEmail,
-                requestGoingtoEmail: session?.user?.email
+            userMakingRequestEmail: friendEmail,
+            requestGoingtoEmail: session?.user?.email
         }
     })
 
-    console.log(deletedUser)
-
-    pusherServer.trigger(toPusherKey(`user:${session?.user?.email}:deletefriendreq`), "deletefriendreq", deletedUser)
+    await pusherServer.trigger(toPusherKey(`user:${session?.user?.email}:deletefriendreq`), "deletefriendreq", {
+        userMakingRequestEmail: friendEmail,
+        requestGoingtoEmail: session?.user?.email
+    })
 
     return NextResponse.json(deletedUser)
 }
