@@ -6,13 +6,17 @@ import { authOptions } from "../../auth/[...nextauth]/route"
 export async function POST(request) {
     const prisma = new PrismaClient()
     const body = await request.json()
-    const { email } = body
+    const { userId } = body
 
-    const friendRequestsIncoming = await prisma.friendReq.findMany({
+    const friends = await prisma.friend.findMany({
         where: {
-            requestGoingtoEmail: email
+            combinedId: {
+                contains: userId
+            }
         }
     })
 
-    return NextResponse.json(friendRequestsIncoming)
+    console.log(friends)
+
+    return NextResponse.json(friends)
 }

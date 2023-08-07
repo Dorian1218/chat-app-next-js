@@ -20,7 +20,14 @@ model User {
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
   accounts       Account[]
-  // friends        Friend[]
+
+  conversationIds String[] @db.ObjectId
+  conversations Conversation[] @relation(fields: [conversationIds], references: [id])
+
+  seenMessagesIds String[] @db.ObjectId
+  seenMessages Message[] @relation("Seen", fields: [seenMessagesIds], references: [id])
+
+  messages Message[]
 }
 
 model Account {
@@ -42,7 +49,7 @@ model Account {
   @@unique([provider, providerAccountId])
 }
 
-model Friend {
+model FriendReq {
   id                     String  @id @default(auto()) @map("_id") @db.ObjectId
   userMakingRequestEmail String?
   userMakingRequestName  String?
@@ -50,4 +57,39 @@ model Friend {
   userMakingRequestPhoto String?
   requestGoingtoEmail    String?
   requestGoingtoId       String?
+}
+
+model Friend {
+  id                     String  @id @default(auto()) @map("_id") @db.ObjectId
+  combinedId String
+}
+
+model Conversation {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt DateTime @default(now())
+  lastMessageAt DateTime @default(now())
+  name String?
+  isGroup Boolean?
+
+  messagesId String[] @db.ObjectId
+  messages Message[]
+
+  userIds String[] @db.ObjectId
+  users User[] @relation(fields: [userIds], references: [id])
+}
+
+model Message {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  body String?
+  image String?
+  createdAt DateTime @default(now())
+
+  seenIds String[] @db.ObjectId
+  seen User[] @relation("Seen", fields: [seenIds], references: [id])
+
+  conversationId String @db.ObjectId
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  senderId String @db.ObjectId
+  sender User @relation(fields: [senderId], references: [id], onDelete: Cascade)
 }

@@ -11,7 +11,7 @@ export async function DELETE({ params }) {
     const friendEmail = params
     console.log(params)
 
-    const deletedUser = await prisma.friend.deleteMany({
+    const deletedUser = await prisma.friendReq.deleteMany({
         where: {
             userMakingRequestEmail: friendEmail,
             requestGoingtoEmail: session?.user?.email

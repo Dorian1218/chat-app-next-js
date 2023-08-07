@@ -30,7 +30,7 @@ export default function Sidebar() {
 
     useLayoutEffect(() => {
         if (session?.user == undefined) {
-            window.history.back()
+            // window.history.back()
         }
         const getFriends = async () => {
             await axios.post("/api/user/getfriendrequest", { email: session?.user?.email }).then((response) => {

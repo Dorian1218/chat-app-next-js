@@ -12,6 +12,7 @@ import { useRouter } from 'next/navigation';
 export default function FriendRequest() {
     const [incomingFriends, setIncomingFriends] = useState([])
     const [friendReq, setFriendReq] = useState("")
+    const [userId, setUserId] = useState("")
     const defaultProfilePic = "/profilepic.png"
 
     const { data: session } = useSession()
@@ -67,7 +68,15 @@ export default function FriendRequest() {
                             <p>{friend.userMakingRequestEmail}</p>
                         </div>
                         <div>
-                            <button onClick={() => console.log(friend.userMakingRequestName)} className="btn btn-circle ml-3 btn-primary">
+                            <button onClick={async () => {
+                                await axios.delete(`/api/user/deletefriendrequest/${friend.userMakingRequestEmail}`).then(async () => {
+                                    console.log("deleted")
+                                    setIncomingFriends((prev) => prev.filter((req) => req.userMakingRequestEmail !== friend.userMakingRequestEmail))
+                                    await axios.post("/api/user/getuserid", {email: friend.userMakingRequestEmail}).then(async (response) => {
+                                        await axios.post("/api/user/acceptfriendreq", {friendId: response.data})
+                                    })
+                                })
+                            }} className="btn btn-circle ml-3 btn-primary">
                                 <AiOutlineCheck />
                             </button>
                             <button className="btn btn-circle ml-3 btn-error" onClick={async () => {

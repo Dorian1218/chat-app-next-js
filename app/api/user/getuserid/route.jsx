@@ -2,17 +2,19 @@ import { NextResponse } from "next/server"
 import { PrismaClient } from "@prisma/client"
 import { getServerSession } from "next-auth"
 import { authOptions } from "../../auth/[...nextauth]/route"
+import { toPusherKey } from "@/app/libs/utils"
+import { pusherServer } from "@/app/libs/pusherserver"
 
 export async function POST(request) {
     const prisma = new PrismaClient()
     const body = await request.json()
     const { email } = body
 
-    const friendRequestsIncoming = await prisma.friendReq.findMany({
+    const user = await prisma.user.findUnique({
         where: {
-            requestGoingtoEmail: email
+            email: email
         }
     })
 
-    return NextResponse.json(friendRequestsIncoming)
+    return NextResponse.json(user.id)
 }

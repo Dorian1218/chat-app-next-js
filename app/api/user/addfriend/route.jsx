@@ -36,7 +36,7 @@ export async function POST(request) {
         return new NextResponse("You cannot start a conversation with yourself", { status: 400 })
     }
 
-    const otherSentRequest = await prisma.friend.findMany({
+    const otherSentRequest = await prisma.friendReq.findMany({
         where: {
             userMakingRequestEmail: user.email,
             requestGoingtoEmail: session?.user?.email
@@ -47,7 +47,7 @@ export async function POST(request) {
         return new NextResponse("This user has already sent a friend request to you", { status: 400 })
     }
 
-    const requestExist = prisma.friend.findMany({
+    const requestExist = prisma.friendReq.findMany({
         where: {
             userMakingRequestEmail: session?.user?.email,
             requestGoingtoEmail: user.email
@@ -58,7 +58,7 @@ export async function POST(request) {
         return new NextResponse("You already sent a friend request to this user", { status: 400 })
     }
 
-    const friendRequest = await prisma.friend.create({
+    const friendRequest = await prisma.friendReq.create({
         data: {
             userMakingRequestEmail: session?.user?.email,
             userMakingRequestName: personMakingRequest.name,
