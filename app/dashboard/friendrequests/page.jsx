@@ -7,13 +7,15 @@ import { AiOutlineCheck, AiOutlineClose } from "react-icons/ai"
 import { toPusherKey } from '../../libs/utils';
 import { pusherClient } from '../../libs/pusherclient';
 import { toast } from 'react-hot-toast';
+import { useRouter } from 'next/navigation';
 
 export default function FriendRequest() {
     const [incomingFriends, setIncomingFriends] = useState([])
     const [friendReq, setFriendReq] = useState("")
-    const defaultProfilePic = "profilepic.png"
+    const defaultProfilePic = "/profilepic.png"
 
     const { data: session } = useSession()
+    const router = useRouter()
 
     useEffect(() => {
         const getFriends = async () => {
@@ -28,31 +30,27 @@ export default function FriendRequest() {
 
     useEffect(() => {
 
+        pusherClient.subscribe(toPusherKey(`user:${session?.user?.email}:incomingfriendreq`))
+        pusherClient.subscribe(toPusherKey(`user:${session?.user?.email}:deletefriendreq`))
+
         const friendRequestHandler = async ({ userMakingRequestEmail, userMakingRequestName, userMakingRequestId, userMakingRequestPhoto, requestGoingtoEmail, requestGoingtoId }) => {
             console.log("friend request")
             setIncomingFriends((prev) => [...prev, { userMakingRequestEmail, userMakingRequestName, userMakingRequestId, userMakingRequestPhoto, requestGoingtoEmail, requestGoingtoId }])
             console.log(incomingFriends)
         }
 
-        // const deleteFriendHandler = async ({userMakingRequestEmail, requestGoingtoEmail}) => {
-        //     await axios.post("/api/user/getfriendrequest", { email: session?.user?.email }).then((response) => {
-        //         setIncomingFriends((prev) => prev.filter((request) => request.requestGoingtoEmail !== requestGoingtoEmail))
-        //     })
+        const deleteFriendHandler = async ({userMakingRequestEmail}) => {
+            setIncomingFriends((prev) => prev.filter((req) => req.userMakingRequestEmail !== userMakingRequestEmail))
+        }
 
-        //     console.log(incomingFriends)
-        // }
-
-        const channelFriendReq = pusherClient.subscribe(toPusherKey(`user:${session?.user?.email}:incomingfriendreq`))
-        // const channelDeleteReq = pusherClient.subscribe(toPusherKey(`user:${session?.user?.email}:deletefriendreq`))
-
-        channelFriendReq.bind("incomingfriendreq", friendRequestHandler)
-        // channelDeleteReq.bind("deletefriendreq", deleteFriendHandler)
+        pusherClient.bind("incomingfriendreq", friendRequestHandler)
+        pusherClient.bind("deletefriendreq", deleteFriendHandler)
 
         return () => {
             pusherClient.unsubscribe(toPusherKey(`user:${session?.user?.email}:incomingfriendreq`))
-            // pusherClient.unsubscribe(toPusherKey(`user:${session?.user?.email}:deletefriendreq`))
-            channelFriendReq.unbind("incomingfriendreq", friendRequestHandler)
-            // channelDeleteReq.unbind("deletefriendreq", deleteFriendHandler)
+            pusherClient.unbind("incomingfriendreq", friendRequestHandler)
+            pusherClient.unsubscribe(toPusherKey(`user:${session?.user?.email}:deletefriendreq`))
+            pusherClient.unbind("deletefriendreq", deleteFriendHandler)
         }
     }, [])
 

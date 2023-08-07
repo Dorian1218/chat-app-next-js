@@ -69,18 +69,9 @@ export async function POST(request) {
         }
     })
 
-    console.log(friendRequest)
+    console.log("USER BEING ADDED " + user?.email)
 
     await pusherServer.trigger(toPusherKey(`user:${user.email}:incomingfriendreq`), "incomingfriendreq", {
-        userMakingRequestEmail: session?.user?.email,
-        userMakingRequestName: personMakingRequest.name,
-        userMakingRequestId: personMakingRequest.id,
-        userMakingRequestPhoto: personMakingRequest.image,
-        requestGoingtoEmail: user.email,
-        requestGoingtoId: user.id
-    })
-
-    await pusherServer.trigger(toPusherKey(`user:${user.email}:incomingfriendreqnum`), "incomingfriendreqnum", {
         userMakingRequestEmail: session?.user?.email,
         userMakingRequestName: personMakingRequest.name,
         userMakingRequestId: personMakingRequest.id,

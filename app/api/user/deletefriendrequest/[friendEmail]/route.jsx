@@ -18,7 +18,7 @@ export async function DELETE({ params }) {
         }
     })
 
-    await pusherServer.trigger(toPusherKey(`user:${session?.user?.email}:deletefriendreq`), "deletefriendreq", {
+    pusherServer.trigger(toPusherKey(`user:${session?.user?.email}:deletefriendreq`), "deletefriendreq", {
         userMakingRequestEmail: friendEmail,
         requestGoingtoEmail: session?.user?.email
     })

@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import Provider from "./context/AuthContext";
 import ToasterContext from "./context/ToasterContext";
 import ClientOnly from "./components/ClientOnly";
+import PusherContext from "./context/PusherContext";
 
 const inter = Inter({ subsets: ["latin"] });
 
