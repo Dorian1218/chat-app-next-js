@@ -34,7 +34,6 @@ export default function Sidebar() {
         }
         const getFriends = async () => {
             await axios.post("/api/user/getfriendrequest", { email: session?.user?.email }).then((response) => {
-                console.log(response.data?.requestGoingtoEmail)
                 if (response.data?.requestGoingtoEmail === session?.user?.email) {
                     setIncomingFriends(response.data?.length)
                 }
@@ -44,8 +43,6 @@ export default function Sidebar() {
     }, [])
 
     useLayoutEffect(() => {
-
-        console.log(session?.user?.email)
 
         pusherClient.subscribe(toPusherKey(`user:${session?.user?.email}:incomingfriendreq`))
         pusherClient.subscribe(toPusherKey(`user:${session?.user?.email}:deletefriendreq`))

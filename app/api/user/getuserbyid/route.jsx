@@ -4,13 +4,13 @@ import { PrismaClient } from "@prisma/client"
 export async function POST(request) {
     const prisma = new PrismaClient()
     const body = await request.json()
-    const { email } = body
+    const { id } = body
 
-    const friendRequestsIncoming = await prisma.friendReq.findMany({
+    const user = await prisma.user.findUnique({
         where: {
-            requestGoingtoEmail: email
+            id: id
         }
     })
 
-    return NextResponse.json(friendRequestsIncoming)
+    return NextResponse.json(user)
 }

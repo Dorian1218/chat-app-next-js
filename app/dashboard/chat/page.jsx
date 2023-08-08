@@ -6,21 +6,46 @@ import { useSession } from 'next-auth/react';
 import { toPusherKey } from '@/app/libs/utils';
 import { AiOutlineSend, AiOutlinePlus } from "react-icons/ai"
 import axios from 'axios';
+import { useRouter } from 'next/navigation';
 
 export default function Chat() {
 
     const [incomingFriends, setIncomingFriends] = useState([])
+    const [userId, setUserId] = useState()
     const [friends, setFriends] = useState([])
-    const { data: session } = useSession()
+    const { data: session, status } = useSession()
+    const router = useRouter()
+    const totalFriends = []
+
+    // useEffect(() => {
+    //     if (status !== "authenticated") {
+    //       router.push('/')
+    //     }
+    //   })
 
     useEffect(() => {
         const getFriends = async () => {
-            await axios.post("/api/user/getuserid", {email: session?.user?.email}).then(async (response) => {
-                await axios.post("/api/user/getfriends", {userId: response.data}).then((response) => {
-                    setFriends(response.data)
-                    console.log(friends)
+            console.log(status)
+            if (status === "authenticated") {
+                await axios.post("/api/user/getuserid", { email: session?.user?.email }).then(async (response) => {
+                    setUserId(response.data)
+                    await axios.post("/api/user/getfriends", { userId: response.data }).then((response) => {
+                        setFriends(response.data)
+                        console.log(friends)
+                    })
                 })
-            })
+
+                friends.map(async (friend) => {
+                    await axios.post("/api/user/getuserbyid", {id: friend.combinedId.replace(userId, "")}).then((response) => {
+                        totalFriends.push(response.data)
+                    })
+                })
+
+            }
+
+            else {
+                router.push('/')
+            }
         }
 
         getFriends()
@@ -50,7 +75,10 @@ export default function Chat() {
             pusherClient.unsubscribe(toPusherKey(`user:${session?.user?.email}:deletefriendreq`))
             pusherClient.unbind("deletefriendreq", deleteRequestHandler)
         }
+
     }, [])
+
+
     return (
         <div className='h-screen flex w-full'>
             <div className='h-screen w-1/5 bg-slate-700 p-3'>
@@ -62,7 +90,6 @@ export default function Chat() {
                     <dialog id="my_modal_3" className="modal">
                         <form method="dialog" className="modal-box">
                             <h3 className="font-bold text-lg mb-3">Start a Chat!</h3>
-
                             <div className="modal-action">
                                 {/* if there is a button in form, it will close the modal */}
                                 <button className="btn">Close</button>

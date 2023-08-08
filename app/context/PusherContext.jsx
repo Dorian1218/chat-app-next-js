@@ -11,8 +11,6 @@ const PusherContext = ({children}) => {
     const { data: session } = useSession()
 
     useEffect(() => {
-
-        console.log(session?.user?.email)
   
         pusherClient.subscribe(toPusherKey(`user:${session?.user?.email}:incomingfriendreq`))
         pusherClient.subscribe(toPusherKey(`user:${session?.user?.email}:deletefriendreq`))
