@@ -8,7 +8,6 @@ export async function POST(request) {
     const prisma = new PrismaClient()
     const body = await request.json()
     const { userId } = body
-    const allFriends = []
 
     const friends = await prisma.friend.findMany({
         where: {
@@ -17,9 +16,6 @@ export async function POST(request) {
             }
         }
     })
-
-    console.log(friends)
-
 
     return NextResponse.json(friends)
 }

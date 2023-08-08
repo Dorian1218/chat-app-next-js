@@ -10,7 +10,7 @@ export async function POST(req) {
     const prisma = new PrismaClient()
     const session = await getServerSession(authOptions)
     const body = await req.json()
-    const {friendId} = body
+    const {friendId, friendEmail, friendName, friendImage} = body
     var combinedId
 
     const user = await prisma.user.findUnique({
@@ -29,7 +29,10 @@ export async function POST(req) {
 
     const friend = await prisma.friend.create({
         data: {
-            combinedId: combinedId
+            combinedId: combinedId,
+            combinedEmail: user.email + friendEmail,
+            combinedName: user.name + friendName,
+            combinedImg: user.image + friendImage
         }
     })
 

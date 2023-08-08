@@ -11,17 +11,11 @@ import { useRouter } from 'next/navigation';
 export default function Chat() {
 
     const [incomingFriends, setIncomingFriends] = useState([])
-    const [userId, setUserId] = useState()
+    const [userId, setUserId] = useState("")
     const [friends, setFriends] = useState([])
+    var [selected, setSelected] = useState([])
     const { data: session, status } = useSession()
     const router = useRouter()
-    const totalFriends = []
-
-    // useEffect(() => {
-    //     if (status !== "authenticated") {
-    //       router.push('/')
-    //     }
-    //   })
 
     useEffect(() => {
         const getFriends = async () => {
@@ -30,14 +24,8 @@ export default function Chat() {
                 await axios.post("/api/user/getuserid", { email: session?.user?.email }).then(async (response) => {
                     setUserId(response.data)
                     await axios.post("/api/user/getfriends", { userId: response.data }).then((response) => {
+                        console.log(response.data)
                         setFriends(response.data)
-                        console.log(friends)
-                    })
-                })
-
-                friends.map(async (friend) => {
-                    await axios.post("/api/user/getuserbyid", {id: friend.combinedId.replace(userId, "")}).then((response) => {
-                        totalFriends.push(response.data)
                     })
                 })
 
@@ -78,6 +66,26 @@ export default function Chat() {
 
     }, [])
 
+    const listFriends = friends.map((friend) => {
+        return (
+            <div className='flex items-center justify-between'>
+                <div className='flex items-center'>
+                    <img src={friend.combinedImg.replace(session?.user.image, "") === "null" ? "/profilepic.png" : friend.combinedImg.replace(session?.user.image, "")} className='w-10 h-10 rounded-full' />
+                    {/* <p>{friend.combinedId.replace(userId, "")}</p> */}
+                    <div className='flex flex-col ml-2'>
+                        <p>{friend.combinedName.replace(session?.user?.name, "")}</p>
+                        <p>{friend.combinedEmail.replace(session?.user?.email, "")}</p>
+                    </div>
+                </div>
+                <input type="checkbox" className='checkbox' value={friend} onClick={async (e) => {
+                    console.log(e.target.checked)
+                    await setSelected([...selected, { friend }])
+                    console.log(selected)
+                }} />
+            </div>
+        )
+    })
+
 
     return (
         <div className='h-screen flex w-full'>
@@ -90,8 +98,10 @@ export default function Chat() {
                     <dialog id="my_modal_3" className="modal">
                         <form method="dialog" className="modal-box">
                             <h3 className="font-bold text-lg mb-3">Start a Chat!</h3>
+                            {listFriends}
                             <div className="modal-action">
                                 {/* if there is a button in form, it will close the modal */}
+                                <button className='btn'>{selected.length <= 1 ? "Start chat" : "Start Group Chat"}</button>
                                 <button className="btn">Close</button>
                             </div>
                         </form>

@@ -72,8 +72,8 @@ export default function FriendRequest() {
                                 await axios.delete(`/api/user/deletefriendrequest/${friend.userMakingRequestEmail}`).then(async () => {
                                     console.log("deleted")
                                     setIncomingFriends((prev) => prev.filter((req) => req.userMakingRequestEmail !== friend.userMakingRequestEmail))
-                                    await axios.post("/api/user/getuserid", {email: friend.userMakingRequestEmail}).then(async (response) => {
-                                        await axios.post("/api/user/acceptfriendreq", {friendId: response.data})
+                                    await axios.post("/api/user/getuserbyemail", {email: friend.userMakingRequestEmail}).then(async (response) => {
+                                        await axios.post("/api/user/acceptfriendreq", {friendId: response.data.id, friendEmail: response.data.email, friendName: response.data.name, friendImage: response.data.image})
                                     })
                                 })
                             }} className="btn btn-circle ml-3 btn-primary">

@@ -62,6 +62,9 @@ model FriendReq {
 model Friend {
   id                     String  @id @default(auto()) @map("_id") @db.ObjectId
   combinedId String
+  combinedEmail String
+  combinedName String
+  combinedImg String
 }
 
 model Conversation {
