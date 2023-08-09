@@ -17,12 +17,12 @@ export default function Account() {
       pusherClient.subscribe(toPusherKey(`user:${session?.user?.email}:incomingfriendreq`))
       pusherClient.subscribe(toPusherKey(`user:${session?.user?.email}:deletefriendreq`))
 
-      const friendRequestHandler = async () => {
+      const friendRequestHandler = () => {
           console.log("friend request")
           setIncomingFriends((prev) => prev + 1)
       }
 
-      const deleteRequestHandler = async () => {
+      const deleteRequestHandler = () => {
           setIncomingFriends((prev) => prev - 1)
           console.log(incomingFriends)
       }

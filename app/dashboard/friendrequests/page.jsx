@@ -34,13 +34,13 @@ export default function FriendRequest() {
         pusherClient.subscribe(toPusherKey(`user:${session?.user?.email}:incomingfriendreq`))
         pusherClient.subscribe(toPusherKey(`user:${session?.user?.email}:deletefriendreq`))
 
-        const friendRequestHandler = async ({ userMakingRequestEmail, userMakingRequestName, userMakingRequestId, userMakingRequestPhoto, requestGoingtoEmail, requestGoingtoId }) => {
+        const friendRequestHandler = ({ userMakingRequestEmail, userMakingRequestName, userMakingRequestId, userMakingRequestPhoto, requestGoingtoEmail, requestGoingtoId }) => {
             console.log("friend request")
             setIncomingFriends((prev) => [...prev, { userMakingRequestEmail, userMakingRequestName, userMakingRequestId, userMakingRequestPhoto, requestGoingtoEmail, requestGoingtoId }])
             console.log(incomingFriends)
         }
 
-        const deleteFriendHandler = async ({userMakingRequestEmail}) => {
+        const deleteFriendHandler = ({userMakingRequestEmail}) => {
             setIncomingFriends((prev) => prev.filter((req) => req.userMakingRequestEmail !== userMakingRequestEmail))
         }
 
@@ -73,7 +73,14 @@ export default function FriendRequest() {
                                     console.log("deleted")
                                     setIncomingFriends((prev) => prev.filter((req) => req.userMakingRequestEmail !== friend.userMakingRequestEmail))
                                     await axios.post("/api/user/getuserbyemail", {email: friend.userMakingRequestEmail}).then(async (response) => {
-                                        await axios.post("/api/user/acceptfriendreq", {friendId: response.data.id, friendEmail: response.data.email, friendName: response.data.name, friendImage: response.data.image})
+                                        await axios.post("/api/user/acceptfriendreq", {friendId: response.data.id, friendEmail: response.data.email, friendName: response.data.name, friendImage: response.data.image ? response.data.image : "/profilepic.png"})
+                                    })
+                                    toast.success("Friend Request Accepted", {
+                                        style: {
+                                            borderRadius: '10px',
+                                            background: '#333',
+                                            color: '#fff',
+                                        }
                                     })
                                 })
                             }} className="btn btn-circle ml-3 btn-primary">

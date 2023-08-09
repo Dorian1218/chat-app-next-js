@@ -28,7 +28,7 @@ export default function Sidebar() {
         console.log("User logged out")
     }
 
-    useLayoutEffect(() => {
+    useEffect(() => {
         if (session?.user == undefined) {
             // window.history.back()
         }
@@ -36,23 +36,21 @@ export default function Sidebar() {
             await axios.post("/api/user/getfriendrequest", { email: session?.user?.email }).then((response) => {
                 if (response.data?.requestGoingtoEmail === session?.user?.email) {
                     setIncomingFriends(response.data?.length)
+                    console.log("INCOMING FRIEND REQ " + incomingFriends)
                 }
             })
         }
         getFriends()
-    }, [])
-
-    useLayoutEffect(() => {
 
         pusherClient.subscribe(toPusherKey(`user:${session?.user?.email}:incomingfriendreq`))
         pusherClient.subscribe(toPusherKey(`user:${session?.user?.email}:deletefriendreq`))
 
-        const friendRequestHandler = async () => {
+        const friendRequestHandler = () => {
             console.log("friend request")
             setIncomingFriends((prev) => prev + 1)
         }
 
-        const deleteRequestHandler = async () => {
+        const deleteRequestHandler = () => {
             setIncomingFriends((prev) => prev - 1)
             console.log(incomingFriends)
         }

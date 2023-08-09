@@ -13,7 +13,7 @@ export default function Chat() {
     const [incomingFriends, setIncomingFriends] = useState([])
     const [userId, setUserId] = useState("")
     const [friends, setFriends] = useState([])
-    var [selected, setSelected] = useState([])
+    var selected = []
     const { data: session, status } = useSession()
     const router = useRouter()
 
@@ -44,12 +44,12 @@ export default function Chat() {
         pusherClient.subscribe(toPusherKey(`user:${session?.user?.email}:incomingfriendreq`))
         pusherClient.subscribe(toPusherKey(`user:${session?.user?.email}:deletefriendreq`))
 
-        const friendRequestHandler = async () => {
+        const friendRequestHandler = () => {
             console.log("friend request")
             setIncomingFriends((prev) => prev + 1)
         }
 
-        const deleteRequestHandler = async () => {
+        const deleteRequestHandler = () => {
             setIncomingFriends((prev) => prev - 1)
             console.log(incomingFriends)
         }
@@ -68,23 +68,32 @@ export default function Chat() {
 
     const listFriends = friends.map((friend) => {
         return (
-            <div className='flex items-center justify-between'>
+            <div className='flex items-center justify-between mb-3'>
                 <div className='flex items-center'>
-                    <img src={friend.combinedImg.replace(session?.user.image, "") === "null" ? "/profilepic.png" : friend.combinedImg.replace(session?.user.image, "")} className='w-10 h-10 rounded-full' />
-                    {/* <p>{friend.combinedId.replace(userId, "")}</p> */}
+                    <img src={friend?.combinedImg?.replace(session?.user.image, "") === "null" ? "/profilepic.png" : friend.combinedImg.replace(session?.user.image, "")} className='w-11 h-11 rounded-full' />
                     <div className='flex flex-col ml-2'>
-                        <p>{friend.combinedName.replace(session?.user?.name, "")}</p>
-                        <p>{friend.combinedEmail.replace(session?.user?.email, "")}</p>
+                        <p>{friend?.combinedName?.replace(session?.user?.name, "")}</p>
+                        <p className='opacity-50'>{friend?.combinedEmail?.replace(session?.user?.email, "")}</p>
                     </div>
                 </div>
-                <input type="checkbox" className='checkbox' value={friend} onClick={async (e) => {
-                    console.log(e.target.checked)
-                    await setSelected([...selected, { friend }])
-                    console.log(selected)
+                <input type="checkbox" className='checkbox' value={friend} onChange={(e) => {
+                    if (e.target.checked === true) {
+                        selected.push({ friend })
+                        console.log(selected)
+                    }
+
+                    else {
+                        selected = selected.filter((item) => { return item.friend.combinedId !== friend.combinedId })
+                        console.log(selected)
+                    }
                 }} />
             </div>
         )
     })
+
+    const handleNewChat = async () => {
+        await axios.post("/api/conversation")
+    }
 
 
     return (
@@ -98,10 +107,12 @@ export default function Chat() {
                     <dialog id="my_modal_3" className="modal">
                         <form method="dialog" className="modal-box">
                             <h3 className="font-bold text-lg mb-3">Start a Chat!</h3>
-                            {listFriends}
+                            <div className='h-24 max-h-24 overflow-y-scroll'>
+                                {listFriends}
+                            </div>
                             <div className="modal-action">
                                 {/* if there is a button in form, it will close the modal */}
-                                <button className='btn'>{selected.length <= 1 ? "Start chat" : "Start Group Chat"}</button>
+                                <button className='btn'>Start Chat</button>
                                 <button className="btn">Close</button>
                             </div>
                         </form>
