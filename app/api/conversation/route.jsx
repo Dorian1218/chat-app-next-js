@@ -18,6 +18,9 @@ export async function POST(req) {
         }
     })
 
+    const userNames = [currentUser.name]
+    const userImages = [currentUser.image]
+
     console.log(currentUser)
     
     const conversation = await prisma.conversation.create({
@@ -34,15 +37,13 @@ export async function POST(req) {
                     }
                 ]
             },
-            userNames: members.map((user) => user.name, currentUser.name),
-            userImage: members.map((user) => user.image ? user.image : "/profilepic.png")
         },
         include: {
             users: true
         }
     })
 
-    // pusherServer.trigger(toPusherKey(`user:${members}:newconversation`))
+    pusherServer.trigger(`user_newconversation`, "newconversation", conversation)
 
     return NextResponse.json(conversation)
 }

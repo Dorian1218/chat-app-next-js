@@ -79,9 +79,6 @@ model Conversation {
 
   userIds String[] @db.ObjectId
   users User[] @relation(fields: [userIds], references: [id])
-
-  userNames String[]
-  userImage String[]
 }
 
 model Message {

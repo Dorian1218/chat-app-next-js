@@ -18,9 +18,9 @@ export default function Chat() {
     const [name, setName] = useState("")
     const [conversations, setConversations] = useState([])
     const [user, setUser] = useState()
-    var selected = []
     const [select, setSelect] = useState([])
     const { data: session, status } = useSession()
+    const [selectedConvo, setSelectedConvo] = useState()
     const router = useRouter()
 
     useEffect(() => {
@@ -29,10 +29,7 @@ export default function Chat() {
             if (status === "authenticated") {
                 await axios.post("/api/user/getuserid", { email: session?.user?.email }).then(async (response) => {
                     setUserId(response.data.id)
-                    setUser(response.data)
-                    console.log()
                     await axios.post("/api/user/getfriends", { userId: response.data.id }).then((response) => {
-                        console.log(response.data)
                         setFriends(response.data)
                     })
                 })
@@ -50,6 +47,7 @@ export default function Chat() {
     useEffect(() => {
         const getConversations = async () => {
             await axios.post("/api/conversation/get").then((response) => {
+                console.log(response.data)
                 setConversations(response.data)
             })
         }
@@ -88,6 +86,23 @@ export default function Chat() {
         console.log(select)
     }, [select])
 
+    useEffect(() => {
+        pusherClient.subscribe(`user_newconversation`)
+
+        const newConversation = (conversation) => {
+            console.log("new convo")
+            setConversations((prev) => [...prev, conversation])
+            console.log(conversations)
+        }
+
+        pusherClient.bind("newconversation", newConversation)
+
+        return () => {
+            pusherClient.unsubscribe(`user_newconversation`)
+            pusherClient.unbind("newconversation", newConversation)
+        }
+    }, [])
+
     const listFriends = friends.map((friend) => {
         return (
             <div className='flex items-center justify-between mb-3'>
@@ -101,9 +116,6 @@ export default function Chat() {
                 <input type="checkbox" className='checkbox' value={friend} onChange={async (e) => {
                     if (e.target.checked === true) {
                         await axios.post("/api/user/getuserbyid", { id: friend.combinedId.replace(userId, "") }).then((response) => {
-                            selected.push(response.data)
-                            // console.log(selected)
-                            // console.log(selected.length)
                             setSelect((prev) => [...prev, response.data])
                         })
                     }
@@ -119,8 +131,6 @@ export default function Chat() {
         if (select.length > 1) {
             setIsGroup(true)
         }
-        setSelect((prev) => [...prev, user])
-        console.log(select)
         await axios.post("/api/conversation", { members: select, isGroup: isGroup, name: name }).then(() => {
             toast.success("Conversation Created", {
                 style: {
@@ -173,61 +183,144 @@ export default function Chat() {
                     </dialog>
                 </div>
                 {conversations.map((conversation) => {
-                    return (
-                        <div className='mt-1 flex select-none cursor-pointer'>
-                            <div className='avatar-group -space-x-5 flex items-center'>
-                                {conversation.userImage.map((image, index) => {
-                                    if (conversation.userImage.length <= 2) {
-                                        return (
-                                            <div className='avatar'>
-                                                <div className="w-12">
-                                                    <img src={image} />
-                                                </div>
-                                            </div>
-                                        )
-                                    }
-
-                                    if (conversation.userImage.length > 2 && index < conversation.userImage.length - 1) {
-                                        return (
-                                            <div className='avatar'>
-                                                <div className="w-12">
-                                                    <img src={image} />
-                                                </div>
-                                            </div>
-                                        )
-                                    }
-
-                                    else {
-                                        return (
-                                            <div className="avatar placeholder">
-                                                <div className="w-12 bg-neutral-focus text-neutral-content">
-                                                    <span>+{conversation.userImage.length - 2}</span>
-                                                </div>
-                                            </div>
-                                        )
-                                    }
-                                })}
-                            </div>
-                            <div className='overflow-hidden overflow-ellipsis mt-1'>
-                                {conversation.name}
-                                <div className='flex'>
-                                    {conversation.userNames.map((name, index) => {
-                                        if (index === conversation.userNames.length - 1) {
+                    if (conversation.users > 2) {
+                        return (
+                            <div className='mt-1 flex select-none cursor-pointer'>
+                                <div className='avatar-group -space-x-5 flex items-center'>
+                                    {conversation.users.map((users, index) => {
+                                        if (users.image === session?.user?.image) {
                                             return (
-                                                <p className='mr-1'>{name}</p>
+                                                <div></div>
                                             )
                                         }
-
+    
+                                        if (conversation.users.length <= 2) {
+                                            return (
+                                                <div className='avatar'>
+                                                    <div className="w-12">
+                                                        <img src={users.image !== null ? users.image : "/profilepic.png"} />
+                                                    </div>
+                                                </div>
+                                            )
+                                        }
+    
+                                        if (conversation.users.length > 2 && index < conversation.users.length - 1) {
+                                            return (
+                                                <div className='avatar'>
+                                                    <div className="w-12">
+                                                        <img src={users.image !== null ? users.image : "/profilepic.png"} />
+                                                    </div>
+                                                </div>
+                                            )
+                                        }
+    
                                         else {
                                             return (
-                                                <p className='mr-1'>{name + ","}</p>
+                                                <div className="avatar placeholder">
+                                                    <div className="w-12 bg-neutral-focus text-neutral-content">
+                                                        <span>+{conversation.users.length - 2}</span>
+                                                    </div>
+                                                </div>
                                             )
                                         }
                                     })}
                                 </div>
+                                <div className='overflow-hidden overflow-ellipsis mt-1'>
+                                    {conversation.name}
+                                    <div className='flex'>
+                                        {conversation.users.map((users, index) => {
+                                            if (index === conversation.users.length - 1) {
+                                                return (
+                                                    <p className='mr-1'>{users.name}</p>
+                                                )
+                                            }
+    
+                                            if (users.name === session?.user?.name) {
+                                                return (
+                                                    <p></p>
+                                                )
+                                            }
+    
+                                            else {
+                                                return (
+                                                    <p className='mr-1'>{users.name + ","}</p>
+                                                )
+                                            }
+                                        })}
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    )
+                        )
+                    }
+
+                    else {
+                        return (
+                            <div className='mt-1 flex select-none cursor-pointer'>
+                                <div className='avatar-group flex items-center'>
+                                    {conversation.users.map((users, index) => {
+                                        if (users.image === session?.user?.image) {
+                                            return (
+                                                <div></div>
+                                            )
+                                        }
+    
+                                        if (conversation.users.length <= 2) {
+                                            return (
+                                                <div className='avatar'>
+                                                    <div className="w-12">
+                                                        <img src={users.image !== null ? users.image : "/profilepic.png"} />
+                                                    </div>
+                                                </div>
+                                            )
+                                        }
+    
+                                        if (conversation.users.length > 2 && index < conversation.users.length - 1) {
+                                            return (
+                                                <div className='avatar'>
+                                                    <div className="w-12">
+                                                        <img src={users.image !== null ? users.image : "/profilepic.png"} />
+                                                    </div>
+                                                </div>
+                                            )
+                                        }
+    
+                                        else {
+                                            return (
+                                                <div className="avatar placeholder">
+                                                    <div className="w-12 bg-neutral-focus text-neutral-content">
+                                                        <span>+{conversation.users.length - 2}</span>
+                                                    </div>
+                                                </div>
+                                            )
+                                        }
+                                    })}
+                                </div>
+                                <div className='overflow-hidden overflow-ellipsis mt-1 flex items-center ml-1'>
+                                    <div className='flex'>
+                                        {conversation.users.map((users, index) => {
+                                            if (index === conversation.users.length - 1) {
+                                                return (
+                                                    <p className='mr-1'>{users.name}</p>
+                                                )
+                                            }
+    
+                                            if (users.name === session?.user?.name) {
+                                                return (
+                                                    <p></p>
+                                                )
+                                            }
+    
+                                            else {
+                                                return (
+                                                    <p className='mr-1'>{users.name + ","}</p>
+                                                )
+                                            }
+                                        })}
+                                    </div>
+                                </div>
+                            </div>
+                        )
+                    }
                 })}
             </div>
             <div className='h-screen w-3/4 flex flex-col justify-between items-center p-3'>
