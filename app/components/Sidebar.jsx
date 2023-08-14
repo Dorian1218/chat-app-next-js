@@ -58,12 +58,12 @@ export default function Sidebar() {
         pusherClient.bind("incomingfriendreq", friendRequestHandler)
         pusherClient.bind("deletefriendreq", deleteRequestHandler)
 
-        return () => {
-            pusherClient.unsubscribe(toPusherKey(`user:${session?.user?.email}:incomingfriendreq`))
-            pusherClient.unbind("incomingfriendreq", friendRequestHandler)
-            pusherClient.unsubscribe(toPusherKey(`user:${session?.user?.email}:deletefriendreq`))
-            pusherClient.unbind("deletefriendreq", deleteRequestHandler)
-        }
+        // return () => {
+        //     pusherClient.unsubscribe(toPusherKey(`user:${session?.user?.email}:incomingfriendreq`))
+        //     pusherClient.unbind("incomingfriendreq", friendRequestHandler)
+        //     pusherClient.unsubscribe(toPusherKey(`user:${session?.user?.email}:deletefriendreq`))
+        //     pusherClient.unbind("deletefriendreq", deleteRequestHandler)
+        // }
     }, [])
 
     const { setError, formState: { errors } } = useForm({

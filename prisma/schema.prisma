@@ -72,13 +72,16 @@ model Conversation {
   createdAt DateTime @default(now())
   lastMessageAt DateTime @default(now())
   name String?
-  isGroup Boolean?
+  isGroup Boolean
 
   messagesId String[] @db.ObjectId
   messages Message[]
 
   userIds String[] @db.ObjectId
   users User[] @relation(fields: [userIds], references: [id])
+
+  userNames String[]
+  userImage String[]
 }
 
 model Message {
