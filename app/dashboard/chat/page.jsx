@@ -20,7 +20,8 @@ export default function Chat() {
     const [user, setUser] = useState()
     const [select, setSelect] = useState([])
     const { data: session, status } = useSession()
-    const [selectedConvo, setSelectedConvo] = useState()
+    const [selectedConvo, setSelectedConvo] = useState([])
+    const [chatMsg, setChatMsg] = useState("")
     const router = useRouter()
 
     useEffect(() => {
@@ -142,6 +143,17 @@ export default function Chat() {
         })
     }
 
+    const handleChooseConvo = async (id) => {
+        await axios.post("/api/conversation/getbyid", {id: id}).then((response) => {
+            setSelectedConvo(response.data)
+            console.log(response.data)
+        })
+    }
+
+    const sendMessage = async () => {
+        await axios.post("/api/message", {message: chatMsg, conversationId: selectedConvo.id})
+    }
+
 
     return (
         <div className='h-screen flex w-full'>
@@ -183,17 +195,15 @@ export default function Chat() {
                     </dialog>
                 </div>
                 {conversations.map((conversation) => {
-                    if (conversation.users > 2) {
+                    if (conversation.users.length > 2) {
                         return (
-                            <div className='mt-1 flex select-none cursor-pointer'>
+                            <div className='mt-1 flex select-none cursor-pointer' onClick={() =>handleChooseConvo(conversation.id)}>
                                 <div className='avatar-group -space-x-5 flex items-center'>
                                     {conversation.users.map((users, index) => {
                                         if (users.image === session?.user?.image) {
-                                            return (
-                                                <div></div>
-                                            )
+                                            return
                                         }
-    
+
                                         if (conversation.users.length <= 2) {
                                             return (
                                                 <div className='avatar'>
@@ -203,7 +213,7 @@ export default function Chat() {
                                                 </div>
                                             )
                                         }
-    
+
                                         if (conversation.users.length > 2 && index < conversation.users.length - 1) {
                                             return (
                                                 <div className='avatar'>
@@ -213,7 +223,7 @@ export default function Chat() {
                                                 </div>
                                             )
                                         }
-    
+
                                         else {
                                             return (
                                                 <div className="avatar placeholder">
@@ -227,20 +237,20 @@ export default function Chat() {
                                 </div>
                                 <div className='overflow-hidden overflow-ellipsis mt-1'>
                                     {conversation.name}
-                                    <div className='flex'>
+                                    <div className='flex mr-1'>
                                         {conversation.users.map((users, index) => {
                                             if (index === conversation.users.length - 1) {
                                                 return (
                                                     <p className='mr-1'>{users.name}</p>
                                                 )
                                             }
-    
+
                                             if (users.name === session?.user?.name) {
                                                 return (
                                                     <p></p>
                                                 )
                                             }
-    
+
                                             else {
                                                 return (
                                                     <p className='mr-1'>{users.name + ","}</p>
@@ -255,7 +265,7 @@ export default function Chat() {
 
                     else {
                         return (
-                            <div className='mt-1 flex select-none cursor-pointer'>
+                            <div className='mt-1 flex select-none cursor-pointer' onClick={() =>handleChooseConvo(conversation.id)}>
                                 <div className='avatar-group flex items-center'>
                                     {conversation.users.map((users, index) => {
                                         if (users.image === session?.user?.image) {
@@ -263,7 +273,7 @@ export default function Chat() {
                                                 <div></div>
                                             )
                                         }
-    
+
                                         if (conversation.users.length <= 2) {
                                             return (
                                                 <div className='avatar'>
@@ -273,7 +283,7 @@ export default function Chat() {
                                                 </div>
                                             )
                                         }
-    
+
                                         if (conversation.users.length > 2 && index < conversation.users.length - 1) {
                                             return (
                                                 <div className='avatar'>
@@ -283,7 +293,7 @@ export default function Chat() {
                                                 </div>
                                             )
                                         }
-    
+
                                         else {
                                             return (
                                                 <div className="avatar placeholder">
@@ -303,13 +313,13 @@ export default function Chat() {
                                                     <p className='mr-1'>{users.name}</p>
                                                 )
                                             }
-    
+
                                             if (users.name === session?.user?.name) {
                                                 return (
                                                     <p></p>
                                                 )
                                             }
-    
+
                                             else {
                                                 return (
                                                     <p className='mr-1'>{users.name + ","}</p>
@@ -325,12 +335,26 @@ export default function Chat() {
             </div>
             <div className='h-screen w-3/4 flex flex-col justify-between items-center p-3'>
                 <div className='w-full'>
-                    <p>Chat With:</p>
+                    <p>Chat With: {selectedConvo?.users?.filter((user) => user.name !== session?.user?.name).map((user, index) => {
+                        if (selectedConvo?.users?.filter((user) => user.name !== session?.user?.name).length === 1) {
+                            return user.name
+                        }
+
+                        if (index === selectedConvo?.users?.filter((user) => user.name !== session?.user?.name).length - 1 ) {
+                            return user.name
+                        }
+
+                        else {
+                            return user.name + ", "
+                        }
+                    })}</p>
                 </div>
-                <div className='w-full'></div>
+                <div className='w-full'>
+                    Hello
+                </div>
                 <div className='flex w-full'>
-                    <input type="text" placeholder="Type here" className="input input-bordered input-secondary w-full mr-3" />
-                    <button className="btn btn-info"><AiOutlineSend size={20} /></button>
+                    <input type="text" placeholder="Type here" className="input input-bordered input-secondary w-full mr-3" value={chatMsg} onChange={(e) => setChatMsg(e.target.value)}/>
+                    <button className="btn btn-info"><AiOutlineSend size={20} onClick={sendMessage}/></button>
                 </div>
             </div>
         </div>
