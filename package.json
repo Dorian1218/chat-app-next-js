@@ -16,6 +16,7 @@
     "axios": "^1.4.0",
     "bcrypt": "^5.1.0",
     "daisyui": "^3.1.7",
+    "date-fns": "^2.30.0",
     "encoding": "^0.1.13",
     "eslint": "8.43.0",
     "eslint-config-next": "13.4.7",

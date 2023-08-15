@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { PrismaClient } from "@prisma/client"
 import { getServerSession } from "next-auth"
 import { authOptions } from "../auth/[...nextauth]/route"
+import { pusherServer } from "@/app/libs/pusherserver"
 
 export async function POST(req) {
     const session = await getServerSession(authOptions)
@@ -37,7 +38,7 @@ export async function POST(req) {
         },
         include: {
             seen: true,
-            sender: true
+            sender: true,
         }
     })
 
@@ -62,6 +63,8 @@ export async function POST(req) {
     //         }
     //     }
     // })
+
+    pusherServer.trigger("user_sendmessage", "sendmessage", newMessage)
 
     return NextResponse.json(newMessage)
 }

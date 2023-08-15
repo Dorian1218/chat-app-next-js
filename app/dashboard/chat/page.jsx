@@ -8,6 +8,7 @@ import { AiOutlineSend, AiOutlinePlus } from "react-icons/ai"
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
+import { format, getDay } from "date-fns"
 
 export default function Chat() {
 
@@ -22,6 +23,7 @@ export default function Chat() {
     const { data: session, status } = useSession()
     const [selectedConvo, setSelectedConvo] = useState([])
     const [chatMsg, setChatMsg] = useState("")
+    const [messages, setMessages] = useState([])
     const router = useRouter()
 
     useEffect(() => {
@@ -104,6 +106,23 @@ export default function Chat() {
         }
     }, [])
 
+    useEffect(() => {
+        pusherClient.subscribe(`user_sendmessage`)
+
+        const newMessage = (newMessage) => {
+            console.log("new message")
+            setMessages((prev) => [...prev, newMessage])
+            console.log(messages)
+        }
+
+        pusherClient.bind("sendmessage", newMessage)
+
+        return () => {
+            pusherClient.unsubscribe(`user_sendmessage`)
+            pusherClient.unbind("sendmessage", newMessage)
+        }
+    }, [])
+
     const listFriends = friends.map((friend) => {
         return (
             <div className='flex items-center justify-between mb-3'>
@@ -144,14 +163,28 @@ export default function Chat() {
     }
 
     const handleChooseConvo = async (id) => {
-        await axios.post("/api/conversation/getbyid", {id: id}).then((response) => {
+        await axios.post("/api/conversation/getbyid", { id: id }).then(async (response) => {
             setSelectedConvo(response.data)
             console.log(response.data)
+            await axios.post("/api/message/getbyid", { conversationId: id }).then((response) => {
+                setMessages(response.data)
+                console.log(response.data)
+            })
         })
     }
 
     const sendMessage = async () => {
-        await axios.post("/api/message", {message: chatMsg, conversationId: selectedConvo.id})
+        console.log("Message")
+        await axios.post("/api/message", { message: chatMsg, conversationId: selectedConvo.id }).then(() => {
+            toast.success("Message sent succesfully", {
+                style: {
+                    borderRadius: '10px',
+                    background: '#333',
+                    color: '#fff',
+                }
+            })
+            setChatMsg("")
+        })
     }
 
 
@@ -197,14 +230,14 @@ export default function Chat() {
                 {conversations.map((conversation) => {
                     if (conversation.users.length > 2) {
                         return (
-                            <div className='mt-1 flex select-none cursor-pointer' onClick={() =>handleChooseConvo(conversation.id)}>
+                            <div className='mt-1 flex select-none cursor-pointer' onClick={() => handleChooseConvo(conversation.id)}>
                                 <div className='avatar-group -space-x-5 flex items-center'>
-                                    {conversation.users.map((users, index) => {
-                                        if (users.image === session?.user?.image) {
+                                    {conversation.users.filter((user) => user.name !== session?.user?.name).map((users, index) => {
+                                        if (users.image === session?.user?.image && users.name === session?.user?.name) {
                                             return
                                         }
 
-                                        if (conversation.users.length <= 2) {
+                                        if (conversation.users.filter((user) => user.name !== session?.user?.name).length <= 2) {
                                             return (
                                                 <div className='avatar'>
                                                     <div className="w-12">
@@ -214,7 +247,7 @@ export default function Chat() {
                                             )
                                         }
 
-                                        if (conversation.users.length > 2 && index < conversation.users.length - 1) {
+                                        if (conversation.users.filter((user) => user.name !== session?.user?.name).length > 2 && index < conversation.users.filter((user) => user.name !== session?.user?.name).length - 1) {
                                             return (
                                                 <div className='avatar'>
                                                     <div className="w-12">
@@ -236,24 +269,22 @@ export default function Chat() {
                                     })}
                                 </div>
                                 <div className='overflow-hidden overflow-ellipsis mt-1'>
-                                    {conversation.name}
+                                    <p className='font-medium'>{conversation.name}</p>
                                     <div className='flex mr-1'>
-                                        {conversation.users.map((users, index) => {
-                                            if (index === conversation.users.length - 1) {
+                                        {conversation.users.filter((user) => user.name !== session?.user?.name).map((users, index) => {
+                                            if (index === conversation.users.filter((user) => user.name !== session?.user?.name).length - 1) {
                                                 return (
-                                                    <p className='mr-1'>{users.name}</p>
+                                                    <p className='mr-1 whitespace-nowrap text-xs'>{users.name}</p>
                                                 )
                                             }
 
                                             if (users.name === session?.user?.name) {
-                                                return (
-                                                    <p></p>
-                                                )
+                                                return
                                             }
 
                                             else {
                                                 return (
-                                                    <p className='mr-1'>{users.name + ","}</p>
+                                                    <p className='mr-1 whitespace-nowrap text-xs'>{users.name + ","}</p>
                                                 )
                                             }
                                         })}
@@ -265,16 +296,14 @@ export default function Chat() {
 
                     else {
                         return (
-                            <div className='mt-1 flex select-none cursor-pointer' onClick={() =>handleChooseConvo(conversation.id)}>
+                            <div className='mt-1 flex select-none cursor-pointer' onClick={() => handleChooseConvo(conversation.id)}>
                                 <div className='avatar-group flex items-center'>
-                                    {conversation.users.map((users, index) => {
+                                    {conversation.users.filter((user) => user.name !== session?.user?.name).map((users, index) => {
                                         if (users.image === session?.user?.image) {
-                                            return (
-                                                <div></div>
-                                            )
+                                            return
                                         }
 
-                                        if (conversation.users.length <= 2) {
+                                        if (conversation.users.filter((user) => user.name !== session?.user?.name).length <= 2) {
                                             return (
                                                 <div className='avatar'>
                                                     <div className="w-12">
@@ -284,7 +313,7 @@ export default function Chat() {
                                             )
                                         }
 
-                                        if (conversation.users.length > 2 && index < conversation.users.length - 1) {
+                                        if (conversation.users.filter((user) => user.name !== session?.user?.name).length > 2 && index < conversation.users.filter((user) => user.name !== session?.user?.name).length - 1) {
                                             return (
                                                 <div className='avatar'>
                                                     <div className="w-12">
@@ -298,7 +327,7 @@ export default function Chat() {
                                             return (
                                                 <div className="avatar placeholder">
                                                     <div className="w-12 bg-neutral-focus text-neutral-content">
-                                                        <span>+{conversation.users.length - 2}</span>
+                                                        <span>+{conversation.users.filter((user) => user.name !== session?.user?.name).length - 2}</span>
                                                     </div>
                                                 </div>
                                             )
@@ -307,22 +336,20 @@ export default function Chat() {
                                 </div>
                                 <div className='overflow-hidden overflow-ellipsis mt-1 flex items-center ml-1'>
                                     <div className='flex'>
-                                        {conversation.users.map((users, index) => {
-                                            if (index === conversation.users.length - 1) {
+                                        {conversation.users.filter((user) => user.name !== session?.user?.name).map((user, index) => {
+                                            if (index === conversation.users.filter((user) => user.name !== session?.user?.name).length - 1) {
                                                 return (
-                                                    <p className='mr-1'>{users.name}</p>
+                                                    <p className='mr-1 mr-1 whitespace-nowrap'>{user.name}</p>
                                                 )
                                             }
 
-                                            if (users.name === session?.user?.name) {
-                                                return (
-                                                    <p></p>
-                                                )
+                                            if (user.name === session?.user?.name) {
+                                                return
                                             }
 
                                             else {
                                                 return (
-                                                    <p className='mr-1'>{users.name + ","}</p>
+                                                    <p className='mr-1 mr-1 whitespace-nowrap'>{user.name + ","}</p>
                                                 )
                                             }
                                         })}
@@ -333,14 +360,14 @@ export default function Chat() {
                     }
                 })}
             </div>
-            <div className='h-screen w-3/4 flex flex-col justify-between items-center p-3'>
-                <div className='w-full'>
+            <div className='h-screen w-3/4 flex flex-col justify-between items-center p-3 h-screen'>
+                <div className='w-full h-1/6'>
                     <p>Chat With: {selectedConvo?.users?.filter((user) => user.name !== session?.user?.name).map((user, index) => {
                         if (selectedConvo?.users?.filter((user) => user.name !== session?.user?.name).length === 1) {
                             return user.name
                         }
 
-                        if (index === selectedConvo?.users?.filter((user) => user.name !== session?.user?.name).length - 1 ) {
+                        if (index === selectedConvo?.users?.filter((user) => user.name !== session?.user?.name).length - 1) {
                             return user.name
                         }
 
@@ -349,12 +376,63 @@ export default function Chat() {
                         }
                     })}</p>
                 </div>
-                <div className='w-full'>
-                    Hello
+                <div className='w-full overflow-y-auto h-4/6'>
+                    {messages.map((message) => {
+                        if (message.senderId !== userId) {
+                            return (
+                                // <div className="chat chat-start">
+                                //     <div className="chat-bubble">{message.body}</div>
+                                // </div>
+                                <div className="chat chat-start">
+                                    <div className="chat-image avatar">
+                                        <div className="w-10 rounded-full">
+                                            <img src={message.sender.image ? message.sender.image : "/profilepic.png"} />
+                                        </div>
+                                    </div>
+                                    <div className="chat-header">
+                                        {message.sender.name}
+                                        {format(new Date(), "P") === format(new Date(message.createdAt), "P") && <time className="text-xs opacity-50"> {format(new Date(message.createdAt), "p")}</time>}
+                                        {format(new Date(), "P") !== format(new Date(message.createdAt), "P") && (new Date(message.createdAt).getTime() - Date.now()) / 604800000 < 1 && <time className="text-xs opacity-50"> {format(new Date(message.createdAt), "eee")} At {format(new Date(message.createdAt), "p")}</time>}
+                                        {(new Date(message.createdAt).getTime() - Date.now()) / 604800000 >= 1 && <time className="text-xs opacity-50"> {format(new Date(message.createdAt), "P")} At {format(new Date(message.createdAt), "p")}</time>}
+                                    </div>
+                                    <div className="chat-bubble">{message.body}</div>
+                                    <div className="chat-footer opacity-50">
+                                        Delivered
+                                    </div>
+                                </div>
+                            )
+                        }
+
+                        else {
+                            return (
+                                // <div className="chat chat-end">
+                                //     <div className="chat-bubble chat-bubble-info">{message.body}</div>
+                                // </div>
+                                <div className="chat chat-end">
+                                    <div className="chat-image avatar">
+                                        <div className="w-10 rounded-full">
+                                            <img src={message.sender.image ? message.sender.image : "/profilepic.png"} />
+                                        </div>
+                                    </div>
+                                    <div className="chat-header">
+                                        {message.sender.name}
+                                        {format(new Date(), "P") === format(new Date(message.createdAt), "P") && <time className="text-xs opacity-50"> {format(new Date(message.createdAt), "p")}</time>}
+                                        {format(new Date(), "P") !== format(new Date(message.createdAt), "P") && (new Date(message.createdAt).getTime() - Date.now()) / 604800000 < 1 && <time className="text-xs opacity-50"> {format(new Date(message.createdAt), "eee")} At {format(new Date(message.createdAt), "p")}</time>}
+                                        {(new Date(message.createdAt).getTime() - Date.now()) / 604800000 >= 1 && <time className="text-xs opacity-50"> {format(new Date(message.createdAt), "P")} At {format(new Date(message.createdAt), "p")}</time>}
+
+                                    </div>
+                                    <div className="chat-bubble chat-bubble-info">{message.body}</div>
+                                    <div className="chat-footer opacity-50">
+                                        Delivered
+                                    </div>
+                                </div>
+                            )
+                        }
+                    })}
                 </div>
-                <div className='flex w-full'>
-                    <input type="text" placeholder="Type here" className="input input-bordered input-secondary w-full mr-3" value={chatMsg} onChange={(e) => setChatMsg(e.target.value)}/>
-                    <button className="btn btn-info"><AiOutlineSend size={20} onClick={sendMessage}/></button>
+                <div className='flex w-full h-1/6 justify-end items-end'>
+                    <input type="text" placeholder="Type here" className="input input-bordered input-secondary w-full mr-3" value={chatMsg} onChange={(e) => setChatMsg(e.target.value)} />
+                    <button className="btn btn-info"><AiOutlineSend size={20} onClick={sendMessage} /></button>
                 </div>
             </div>
         </div>
