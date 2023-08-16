@@ -14,7 +14,7 @@ export default function Home() {
     if (session?.status === "authenticated") {
       router.push("/dashboard");
     }
-  });
+  }, [session?.status]);
 
   return (
     <div className="h-screen flex items-center justify-center flex-col">

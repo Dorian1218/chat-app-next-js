@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { pusherClient } from '../../libs/pusherclient';
 import { useSession } from 'next-auth/react';
 import { toPusherKey } from '@/app/libs/utils';
@@ -24,6 +24,8 @@ export default function Chat() {
     const [selectedConvo, setSelectedConvo] = useState([])
     const [chatMsg, setChatMsg] = useState("")
     const [messages, setMessages] = useState([])
+    const [disabledStartChat, setDisabledStartChat] = useState(false)
+    const div = useRef(null);
     const router = useRouter()
 
     useEffect(() => {
@@ -93,9 +95,12 @@ export default function Chat() {
         pusherClient.subscribe(`user_newconversation`)
 
         const newConversation = (conversation) => {
-            console.log("new convo")
-            setConversations((prev) => [...prev, conversation])
-            console.log(conversations)
+            console.log(conversation)
+            if (conversation.users.filter(user => user.name === session?.user?.name).length > 0) {
+                console.log("new convo")
+                setConversations((prev) => [...prev, conversation])
+                console.log(conversations)
+            }
         }
 
         pusherClient.bind("newconversation", newConversation)
@@ -135,12 +140,16 @@ export default function Chat() {
                 </div>
                 <input type="checkbox" className='checkbox' value={friend} onChange={async (e) => {
                     if (e.target.checked === true) {
+                        setDisabledStartChat(true)
                         await axios.post("/api/user/getuserbyid", { id: friend.combinedId.replace(userId, "") }).then((response) => {
                             setSelect((prev) => [...prev, response.data])
+                            setDisabledStartChat(false)
                         })
                     }
                     else {
+                        setDisabledStartChat(true)
                         setSelect((prev) => prev.filter((item) => item.id !== friend.combinedId.replace(userId, "")))
+                        setDisabledStartChat(false)
                     }
                 }} />
             </div>
@@ -149,17 +158,30 @@ export default function Chat() {
 
     const handleNewChat = async () => {
         if (select.length > 1) {
-            setIsGroup(true)
-        }
-        await axios.post("/api/conversation", { members: select, isGroup: isGroup, name: name }).then(() => {
-            toast.success("Conversation Created", {
-                style: {
-                    borderRadius: '10px',
-                    background: '#333',
-                    color: '#fff',
-                }
+            await axios.post("/api/conversation", { members: select, isGroup: true, name: name }).then(() => {
+                toast.success("Conversation Created", {
+                    style: {
+                        borderRadius: '10px',
+                        background: '#333',
+                        color: '#fff',
+                    }
+                })
+                setSelect([])
+                setName("")
             })
-        })
+        }
+        else {
+            await axios.post("/api/conversation", { members: select, isGroup: false }).then(() => {
+                toast.success("Conversation Created", {
+                    style: {
+                        borderRadius: '10px',
+                        background: '#333',
+                        color: '#fff',
+                    }
+                })
+                setSelect([])
+            })
+        }
     }
 
     const handleChooseConvo = async (id) => {
@@ -220,8 +242,7 @@ export default function Chat() {
                                 {listFriends.length === 0 && <p>No friends</p>}
                             </div>
                             <div className="modal-action">
-                                {/* if there is a button in form, it will close the modal */}
-                                <button className='btn' onClick={handleNewChat}>Start Chat</button>
+                                <button className='btn' onClick={handleNewChat} disabled={disabledStartChat}>Start Chat</button>
                                 <button className="btn">Close</button>
                             </div>
                         </form>
@@ -339,7 +360,7 @@ export default function Chat() {
                                         {conversation.users.filter((user) => user.name !== session?.user?.name).map((user, index) => {
                                             if (index === conversation.users.filter((user) => user.name !== session?.user?.name).length - 1) {
                                                 return (
-                                                    <p className='mr-1 mr-1 whitespace-nowrap'>{user.name}</p>
+                                                    <p className='mr-1 whitespace-nowrap'>{user.name}</p>
                                                 )
                                             }
 
@@ -349,7 +370,7 @@ export default function Chat() {
 
                                             else {
                                                 return (
-                                                    <p className='mr-1 mr-1 whitespace-nowrap'>{user.name + ","}</p>
+                                                    <p className='mr-1 whitespace-nowrap'>{user.name + ","}</p>
                                                 )
                                             }
                                         })}
@@ -360,7 +381,7 @@ export default function Chat() {
                     }
                 })}
             </div>
-            <div className='h-screen w-3/4 flex flex-col justify-between items-center p-3 h-screen'>
+            <div className='h-screen w-3/4 flex flex-col justify-between items-center p-3'>
                 <div className='w-full h-1/6'>
                     <p>Chat With: {selectedConvo?.users?.filter((user) => user.name !== session?.user?.name).map((user, index) => {
                         if (selectedConvo?.users?.filter((user) => user.name !== session?.user?.name).length === 1) {
@@ -430,6 +451,7 @@ export default function Chat() {
                         }
                     })}
                 </div>
+                <div ref={div}></div>
                 <div className='flex w-full h-1/6 justify-end items-end'>
                     <input type="text" placeholder="Type here" className="input input-bordered input-secondary w-full mr-3" value={chatMsg} onChange={(e) => setChatMsg(e.target.value)} />
                     <button className="btn btn-info"><AiOutlineSend size={20} onClick={sendMessage} /></button>
