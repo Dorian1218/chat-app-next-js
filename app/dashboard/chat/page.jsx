@@ -25,6 +25,7 @@ export default function Chat() {
     const [chatMsg, setChatMsg] = useState("")
     const [messages, setMessages] = useState([])
     const [disabledStartChat, setDisabledStartChat] = useState(false)
+    const [disableSendMsg, setDisableSendMsg] = useState(false)
     const div = useRef(null);
     const router = useRouter()
 
@@ -196,17 +197,31 @@ export default function Chat() {
     }
 
     const sendMessage = async () => {
-        console.log("Message")
-        await axios.post("/api/message", { message: chatMsg, conversationId: selectedConvo.id }).then(() => {
-            toast.success("Message sent succesfully", {
+        if (chatMsg !== "") {
+            setDisableSendMsg(true)
+            console.log("Message")
+            await axios.post("/api/message", { message: chatMsg, conversationId: selectedConvo.id }).then(() => {
+                toast.success("Message sent succesfully", {
+                    style: {
+                        borderRadius: '10px',
+                        background: '#333',
+                        color: '#fff',
+                    }
+                })
+                setChatMsg("")
+            })
+            setDisableSendMsg(false)
+        }
+
+        else {
+            toast.error("Message is empty", {
                 style: {
                     borderRadius: '10px',
                     background: '#333',
                     color: '#fff',
                 }
             })
-            setChatMsg("")
-        })
+        }
     }
 
 
@@ -454,7 +469,7 @@ export default function Chat() {
                 <div ref={div}></div>
                 <div className='flex w-full h-1/6 justify-end items-end'>
                     <input type="text" placeholder="Type here" className="input input-bordered input-secondary w-full mr-3" value={chatMsg} onChange={(e) => setChatMsg(e.target.value)} />
-                    <button className="btn btn-info"><AiOutlineSend size={20} onClick={sendMessage} /></button>
+                    <button className="btn btn-info" onClick={sendMessage} disabled={disableSendMsg}><AiOutlineSend size={20} /></button>
                 </div>
             </div>
         </div>

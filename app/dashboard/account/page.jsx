@@ -4,11 +4,13 @@ import React, { useEffect, useState } from 'react'
 import { pusherClient } from '../../libs/pusherclient';
 import { useSession } from 'next-auth/react';
 import { toPusherKey } from '@/app/libs/utils';
+import axios from 'axios';
 
 export default function Account() {
 
   const [incomingFriends, setIncomingFriends] = useState([])
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
+  const [user, setUser] = useState([])
 
   useEffect(() => {
 
@@ -38,9 +40,25 @@ export default function Account() {
       }
   }, [])
 
+  useEffect(() => {
+    if (status === "authenticated") {
+      const getUserInfo = async () => {
+        await axios.post("/api/user/getuserbyemail", {email: session?.user?.email}).then((response) => {
+          setUser(response.data)
+          console.log(response.data)
+        })
+      }
+
+      getUserInfo()
+    }
+
+  }, [status])
+
   return (
     <div className='h-screen p-3'>
       <p className='text-2xl'>Account</p>
+      <p className='mt-3 text-xl'>Email: {user.email}</p>
+      <p className='mt-3 text-xl'>Name: {user.name}</p>
     </div>
   )
 }
