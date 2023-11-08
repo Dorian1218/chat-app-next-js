@@ -14,6 +14,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { toast } from 'react-hot-toast';
 import { pusherClient } from '../libs/pusherclient';
 import { toPusherKey } from '../libs/utils';
+import Image from 'next/image';
 
 export default function Sidebar() {
     const { data: session } = useSession()
@@ -126,7 +127,7 @@ export default function Sidebar() {
                 <div className='flex w-full justify-between items-center mb-2'>
                     <div className="avatar">
                         <div className="w-8 h-8 rounded-full mr-2">
-                            <img src={session?.user?.image ? session?.user?.image : "/profilepic.png"} className='w-5 h-5' />
+                            <Image src={session?.user?.image ? session?.user?.image : "/profilepic.png"} className='w-5 h-5' alt='Profile Picture'/>
                         </div>
                     </div>
                     <p className='text-xl text-center'>Chat App</p>

@@ -34,7 +34,7 @@ const PusherContext = ({children}) => {
             pusherClient.unsubscribe(toPusherKey(`user:${session?.user?.email}:deletefriendreq`))
             pusherClient.unbind("deletefriendreq", deleteRequestHandler)
         }
-    }, [])
+    }, [incomingFriends, session?.user])
 
     return (
         <div>

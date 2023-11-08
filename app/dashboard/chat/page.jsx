@@ -9,6 +9,7 @@ import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 import { format, getDay } from "date-fns"
+import Image from 'next/image';
 
 export default function Chat() {
 
@@ -48,7 +49,7 @@ export default function Chat() {
         }
 
         getFriends()
-    }, [])
+    }, [router, session?.user?.email, status])
 
     useEffect(() => {
         const getConversations = async () => {
@@ -86,7 +87,7 @@ export default function Chat() {
             pusherClient.unbind("deletefriendreq", deleteRequestHandler)
         }
 
-    }, [])
+    }, [incomingFriends, session?.user])
 
     useEffect(() => {
         console.log(select)
@@ -110,7 +111,7 @@ export default function Chat() {
             pusherClient.unsubscribe(`user_newconversation`)
             pusherClient.unbind("newconversation", newConversation)
         }
-    }, [])
+    }, [conversations, session?.user?.name])
 
     useEffect(() => {
         pusherClient.subscribe(`user_sendmessage`)
@@ -127,13 +128,13 @@ export default function Chat() {
             pusherClient.unsubscribe(`user_sendmessage`)
             pusherClient.unbind("sendmessage", newMessage)
         }
-    }, [])
+    }, [messages])
 
     const listFriends = friends.map((friend) => {
         return (
-            <div className='flex items-center justify-between mb-3'>
+            <div className='flex items-center justify-between mb-3' key={friend.id}>
                 <div className='flex items-center'>
-                    <img src={friend?.combinedImg?.replace(session?.user.image, "") === "null" ? "/profilepic.png" : friend.combinedImg.replace(session?.user.image, "")} className='w-11 h-11 rounded-full' />
+                    <Image src={friend?.combinedImg?.replace(session?.user.image, "") === "null" ? "/profilepic.png" : friend.combinedImg.replace(session?.user.image, "")} className='w-11 h-11 rounded-full' alt='Profile Picture'/>
                     <div className='flex flex-col ml-2'>
                         <p>{friend?.combinedName?.replace(session?.user?.name, "")}</p>
                         <p className='opacity-50'>{friend?.combinedEmail?.replace(session?.user?.email, "")}</p>
@@ -243,13 +244,13 @@ export default function Chat() {
                                     {select.map((item, index) => {
                                         if (select.length === 1 || index === select.length - 1) {
                                             return (
-                                                <p className='mr-1'>{item.name}</p>
+                                                <p className='mr-1' key={item.name}>{item.name}</p>
                                             )
                                         }
 
                                         else {
                                             return (
-                                                <p className='mr-1'>{item.name + ","}</p>
+                                                <p className='mr-1' key={item.name}>{item.name + ","}</p>
                                             )
                                         }
                                     })}
@@ -266,7 +267,7 @@ export default function Chat() {
                 {conversations.map((conversation) => {
                     if (conversation.users.length > 2) {
                         return (
-                            <div className='mt-1 flex select-none cursor-pointer' onClick={() => handleChooseConvo(conversation.id)}>
+                            <div className='mt-1 flex select-none cursor-pointer' onClick={() => handleChooseConvo(conversation.id)} key={conversation.id}>
                                 <div className='avatar-group -space-x-5 flex items-center'>
                                     {conversation.users.filter((user) => user.name !== session?.user?.name).map((users, index) => {
                                         if (users.image === session?.user?.image && users.name === session?.user?.name) {
@@ -275,9 +276,9 @@ export default function Chat() {
 
                                         if (conversation.users.filter((user) => user.name !== session?.user?.name).length <= 2) {
                                             return (
-                                                <div className='avatar'>
+                                                <div className='avatar' key={users.image}>
                                                     <div className="w-12">
-                                                        <img src={users.image !== null ? users.image : "/profilepic.png"} />
+                                                        <Image src={users.image !== null ? users.image : "/profilepic.png"} alt="Profile Picture"/>
                                                     </div>
                                                 </div>
                                             )
@@ -285,9 +286,9 @@ export default function Chat() {
 
                                         if (conversation.users.filter((user) => user.name !== session?.user?.name).length > 2 && index < conversation.users.filter((user) => user.name !== session?.user?.name).length - 1) {
                                             return (
-                                                <div className='avatar'>
+                                                <div className='avatar' key={users.image}>
                                                     <div className="w-12">
-                                                        <img src={users.image !== null ? users.image : "/profilepic.png"} />
+                                                        <Image src={users.image !== null ? users.image : "/profilepic.png"} alt='Profile Picture'/>
                                                     </div>
                                                 </div>
                                             )

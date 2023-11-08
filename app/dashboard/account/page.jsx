@@ -38,7 +38,7 @@ export default function Account() {
           pusherClient.unsubscribe(toPusherKey(`user:${session?.user?.email}:deletefriendreq`))
           pusherClient.unbind("deletefriendreq", deleteRequestHandler)
       }
-  }, [])
+  }, [incomingFriends, session?.user])
 
   useEffect(() => {
     if (status === "authenticated") {
@@ -52,7 +52,7 @@ export default function Account() {
       getUserInfo()
     }
 
-  }, [status])
+  }, [status, session?.user?.email])
 
   return (
     <div className='h-screen p-3'>
