@@ -64,7 +64,7 @@ export default function Sidebar() {
         //     pusherClient.unsubscribe(toPusherKey(`user:${session?.user?.email}:deletefriendreq`))
         //     pusherClient.unbind("deletefriendreq", deleteRequestHandler)
         // }
-    }, [])
+    }, [incomingFriends, session?.user])
 
     const { setError, formState: { errors } } = useForm({
         resolver: zodResolver(addFriendValidator)
