@@ -22,8 +22,8 @@ export default function FriendRequest() {
     useEffect(() => {
         const getFriends = async () => {
             await axios.post("/api/user/getfriendrequest", { email: session?.user?.email }).then((response) => {
-                console.log(response.data)
-                setIncomingFriends(response.data)
+                console.log(response?.data)
+                setIncomingFriends(response?.data)
             })
 
         }
@@ -63,7 +63,7 @@ export default function FriendRequest() {
             {incomingFriends.length > 0 && incomingFriends.map(friend => {
                 return (
                     <div className='mt-3 flex items-center' key={friend.id}>
-                        <Image src={friend.userMakingRequestPhoto ? friend.userMakingRequestPhoto : defaultProfilePic} className='w-12 h-12 mr-3 rounded-full' alt='Profile Picture'/>
+                        <Image loader={() => friend.userMakingRequestPhoto ? friend.userMakingRequestPhoto : defaultProfilePic}src={friend.userMakingRequestPhoto ? friend.userMakingRequestPhoto : defaultProfilePic} className='w-12 h-12 mr-3 rounded-full' alt='Profile Picture' width={48} height={48}/>
                         <div>
                             <p>{friend.userMakingRequestName}</p>
                             <p>{friend.userMakingRequestEmail}</p>
@@ -74,7 +74,7 @@ export default function FriendRequest() {
                                     console.log("deleted")
                                     setIncomingFriends((prev) => prev.filter((req) => req.userMakingRequestEmail !== friend.userMakingRequestEmail))
                                     await axios.post("/api/user/getuserbyemail", {email: friend.userMakingRequestEmail}).then(async (response) => {
-                                        await axios.post("/api/user/acceptfriendreq", {friendId: response.data.id, friendEmail: response.data.email, friendName: response.data.name, friendImage: response.data.image ? response.data.image : "/profilepic.png"})
+                                        await axios.post("/api/user/acceptfriendreq", {friendId: response?.data?.id, friendEmail: response?.data?.email, friendName: response?.data?.name, friendImage: response?.data?.image ? response?.data?.image : "/profilepic.png"})
                                     })
                                     toast.success("Friend Request Accepted", {
                                         style: {

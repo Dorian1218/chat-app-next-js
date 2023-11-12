@@ -54,7 +54,7 @@ export default function Signup() {
 
         else {
             await axios.post("api/signup", data).then(async (response) => {
-                console.log(response.data)
+                console.log(response?.data)
                 setLoading(true)
                 setButtonText("Loading")
                 setDisabled(true)
@@ -71,9 +71,8 @@ export default function Signup() {
                 setDisabled(false)
             })
                 .catch(async (e) => {
-                    // console.log(e.response.data)
-                    if (e.response.data) {
-                        toast.error(e.response.data, {
+                    if (e?.response?.data) {
+                        toast.error(e?.response?.data, {
                             style: {
                                 borderRadius: '10px',
                                 background: '#333',

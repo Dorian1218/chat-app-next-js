@@ -35,9 +35,10 @@ export default function Chat() {
             console.log(status)
             if (status === "authenticated") {
                 await axios.post("/api/user/getuserid", { email: session?.user?.email }).then(async (response) => {
-                    setUserId(response.data.id)
-                    await axios.post("/api/user/getfriends", { userId: response.data.id }).then((response) => {
-                        setFriends(response.data)
+                    setUserId(response?.data?.id)
+                    await axios.post("/api/user/getfriends", { userId: response?.data?.id }).then((response) => {
+                        setFriends(response?.data)
+                        console.log(friends)
                     })
                 })
 
@@ -54,8 +55,8 @@ export default function Chat() {
     useEffect(() => {
         const getConversations = async () => {
             await axios.post("/api/conversation/get").then((response) => {
-                console.log(response.data)
-                setConversations(response.data)
+                console.log(response?.data)
+                setConversations(response?.data)
             })
         }
 
@@ -134,7 +135,7 @@ export default function Chat() {
         return (
             <div className='flex items-center justify-between mb-3' key={friend.id}>
                 <div className='flex items-center'>
-                    <Image src={friend?.combinedImg?.replace(session?.user.image, "") === "null" ? "/profilepic.png" : friend.combinedImg.replace(session?.user.image, "")} className='w-11 h-11 rounded-full' alt='Profile Picture'/>
+                    <Image loader={() => friend?.combinedImg?.replace(session?.user.image, "") === "null" ? "/profilepic.png" : friend.combinedImg.replace(session?.user.image, "")} src={friend?.combinedImg?.replace(session?.user.image, "") === "null" ? "/profilepic.png" : friend.combinedImg.replace(session?.user.image, "")} className='w-11 h-11 rounded-full' alt='Profile Picture' width={44} height={44} />
                     <div className='flex flex-col ml-2'>
                         <p>{friend?.combinedName?.replace(session?.user?.name, "")}</p>
                         <p className='opacity-50'>{friend?.combinedEmail?.replace(session?.user?.email, "")}</p>
@@ -144,7 +145,7 @@ export default function Chat() {
                     if (e.target.checked === true) {
                         setDisabledStartChat(true)
                         await axios.post("/api/user/getuserbyid", { id: friend.combinedId.replace(userId, "") }).then((response) => {
-                            setSelect((prev) => [...prev, response.data])
+                            setSelect((prev) => [...prev, response?.data])
                             setDisabledStartChat(false)
                         })
                     }
@@ -160,39 +161,94 @@ export default function Chat() {
 
     const handleNewChat = async () => {
         if (select.length > 1) {
-            await axios.post("/api/conversation", { members: select, isGroup: true, name: name }).then(() => {
-                toast.success("Conversation Created", {
-                    style: {
-                        borderRadius: '10px',
-                        background: '#333',
-                        color: '#fff',
+            await axios.post("/api/conversation/checkifconversationexist", { members: select }).then(async (response) => {
+                console.log(response?.data)
+                if (response.status = 400) {
+                    toast.error("Conversation Already Exists"), {
+                        style: {
+                            borderRadius: '10px',
+                            background: '#333',
+                            color: '#fff',
+                        }
                     }
-                })
-                setSelect([])
-                setName("")
+                }
+
+                else {
+                    await axios.post("/api/conversation", { members: select, isGroup: true, name: name }).then(() => {
+                        toast.success("Conversation Created", {
+                            style: {
+                                borderRadius: '10px',
+                                background: '#333',
+                                color: '#fff',
+                            }
+                        })
+                        setSelect([])
+                        setName("")
+                    })
+                }
+            }).catch(async (e) => {
+                if (e?.response?.data) {
+                    toast.error(e?.response?.data, {
+                        style: {
+                            borderRadius: '10px',
+                            background: '#333',
+                            color: '#fff',
+                        }
+                    })
+
+                    return
+                }
             })
         }
         else {
-            await axios.post("/api/conversation", { members: select, isGroup: false }).then(() => {
-                toast.success("Conversation Created", {
-                    style: {
-                        borderRadius: '10px',
-                        background: '#333',
-                        color: '#fff',
+            await axios.post("/api/conversation/checkifconversationexist", { members: select }).then(async (response) => {
+                console.log(response?.data)
+                if (response.status = 400) {
+                    toast.error("Conversation Already Exists"), {
+                        style: {
+                            borderRadius: '10px',
+                            background: '#333',
+                            color: '#fff',
+                        }
                     }
-                })
-                setSelect([])
+                }
+
+                else {
+                    await axios.post("/api/conversation", { members: select, isGroup: false, name: name }).then(() => {
+                        toast.success("Conversation Created", {
+                            style: {
+                                borderRadius: '10px',
+                                background: '#333',
+                                color: '#fff',
+                            }
+                        })
+                        setSelect([])
+                        setName("")
+                    })
+                }
+            }).catch(async (e) => {
+                if (e?.response?.data) {
+                    toast.error(e?.response?.data, {
+                        style: {
+                            borderRadius: '10px',
+                            background: '#333',
+                            color: '#fff',
+                        }
+                    })
+
+                    return
+                }
             })
         }
     }
 
     const handleChooseConvo = async (id) => {
         await axios.post("/api/conversation/getbyid", { id: id }).then(async (response) => {
-            setSelectedConvo(response.data)
-            console.log(response.data)
+            setSelectedConvo(response?.data)
+            console.log(response?.data)
             await axios.post("/api/message/getbyid", { conversationId: id }).then((response) => {
-                setMessages(response.data)
-                console.log(response.data)
+                setMessages(response?.data)
+                console.log(response?.data)
             })
         })
     }
@@ -278,7 +334,7 @@ export default function Chat() {
                                             return (
                                                 <div className='avatar' key={users.image}>
                                                     <div className="w-12">
-                                                        <Image src={users.image !== null ? users.image : "/profilepic.png"} alt="Profile Picture"/>
+                                                        <Image loader={() => users.image !== null ? users.image : "/profilepic.png"} src={users.image !== null ? users.image : "/profilepic.png"} alt="Profile Picture" width={48} />
                                                     </div>
                                                 </div>
                                             )
@@ -288,7 +344,7 @@ export default function Chat() {
                                             return (
                                                 <div className='avatar' key={users.image}>
                                                     <div className="w-12">
-                                                        <Image src={users.image !== null ? users.image : "/profilepic.png"} alt='Profile Picture'/>
+                                                        <Image loader={() => users.image !== null ? users.image : "/profilepic.png"} src={users.image !== null ? users.image : "/profilepic.png"} alt='Profile Picture' width={48} />
                                                     </div>
                                                 </div>
                                             )

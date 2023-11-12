@@ -44,8 +44,8 @@ export default function Account() {
     if (status === "authenticated") {
       const getUserInfo = async () => {
         await axios.post("/api/user/getuserbyemail", {email: session?.user?.email}).then((response) => {
-          setUser(response.data)
-          console.log(response.data)
+          setUser(response?.data)
+          console.log(response?.data)
         })
       }
 

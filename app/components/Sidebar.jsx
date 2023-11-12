@@ -35,9 +35,9 @@ export default function Sidebar() {
         }
         const getFriends = async () => {
             await axios.post("/api/user/getfriendrequest", { email: session?.user?.email }).then((response) => {
-                if (response.data?.requestGoingtoEmail === session?.user?.email) {
-                    setIncomingFriends(response.data?.length)
-                    console.log("INCOMING FRIEND REQ " + incomingFriends)
+                if (response?.data?.requestGoingtoEmail === session?.user?.email) {
+                    setIncomingFriends(response?.data?.length)
+                    console.log("INCOMING FRIEND REQ " + response?.data?.length)
                 }
             })
         }
@@ -74,7 +74,7 @@ export default function Sidebar() {
 
     const addFriend = async (name) => {
         try {
-            await axios.post("/api/user/addfriend", { name: name }).then((response) => console.log(response.data))
+            await axios.post("/api/user/addfriend", { name: name }).then((response) => console.log(response?.data))
             toast.success("Friend Request Sent", {
                 style: {
                     borderRadius: '10px',
@@ -127,7 +127,7 @@ export default function Sidebar() {
                 <div className='flex w-full justify-between items-center mb-2'>
                     <div className="avatar">
                         <div className="w-8 h-8 rounded-full mr-2">
-                            <Image src={session?.user?.image ? session?.user?.image : "/profilepic.png"} className='w-5 h-5' alt='Profile Picture'/>
+                            <Image loader={() => session?.user?.image ? session?.user?.image : "/profilepic.png"} src={session?.user?.image ? session?.user?.image : "/profilepic.png"} className='w-5 h-5' alt='Profile Picture' width={20} height={20}/>
                         </div>
                     </div>
                     <p className='text-xl text-center'>Chat App</p>
