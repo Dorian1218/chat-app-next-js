@@ -8,6 +8,7 @@ import { toPusherKey } from '../../libs/utils';
 import { pusherClient } from '../../libs/pusherclient';
 import { toast } from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 export default function FriendRequest() {
     const [incomingFriends, setIncomingFriends] = useState([])
@@ -27,7 +28,7 @@ export default function FriendRequest() {
 
         }
         getFriends()
-    }, [])
+    }, [session?.user?.email])
 
     useEffect(() => {
 
@@ -53,7 +54,7 @@ export default function FriendRequest() {
             pusherClient.unsubscribe(toPusherKey(`user:${session?.user?.email}:deletefriendreq`))
             pusherClient.unbind("deletefriendreq", deleteFriendHandler)
         }
-    }, [])
+    }, [incomingFriends, session?.user?.email])
 
 
     return (
@@ -61,8 +62,8 @@ export default function FriendRequest() {
             <p className='text-xl'>Friend Requests: </p>
             {incomingFriends.length > 0 && incomingFriends.map(friend => {
                 return (
-                    <div className='mt-3 flex items-center'>
-                        <img src={friend.userMakingRequestPhoto ? friend.userMakingRequestPhoto : defaultProfilePic} className='w-12 h-12 mr-3 rounded-full' />
+                    <div className='mt-3 flex items-center' key={friend.id}>
+                        <Image src={friend.userMakingRequestPhoto ? friend.userMakingRequestPhoto : defaultProfilePic} className='w-12 h-12 mr-3 rounded-full' alt='Profile Picture'/>
                         <div>
                             <p>{friend.userMakingRequestName}</p>
                             <p>{friend.userMakingRequestEmail}</p>
