@@ -418,9 +418,9 @@ export default function Chat() {
 
                                         if (conversation.users.filter((user) => user.name !== session?.user?.name).length > 2 && index < conversation.users.filter((user) => user.name !== session?.user?.name).length - 1) {
                                             return (
-                                                <div className='avatar'>
+                                                <div className='avatar' key={users.image}>
                                                     <div className="w-12">
-                                                        <img src={users.image !== null ? users.image : "/profilepic.png"} />
+                                                        <Image src={users.image !== null ? users.image : "/profilepic.png"} alt='Profile Picture'/>
                                                     </div>
                                                 </div>
                                             )
@@ -452,7 +452,7 @@ export default function Chat() {
 
                                             else {
                                                 return (
-                                                    <p className='mr-1 whitespace-nowrap'>{user.name + ","}</p>
+                                                    <p key={user.name} className='mr-1 whitespace-nowrap'>{user.name + ","}</p>
                                                 )
                                             }
                                         })}
