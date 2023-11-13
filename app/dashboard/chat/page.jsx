@@ -50,7 +50,7 @@ export default function Chat() {
         }
 
         getFriends()
-    }, [router, session?.user?.email, status])
+    }, [router, session?.user?.email, status, friends])
 
     useEffect(() => {
         const getConversations = async () => {
@@ -362,7 +362,7 @@ export default function Chat() {
 
                                         else {
                                             return (
-                                                <div className="avatar placeholder">
+                                                <div className="avatar placeholder" key={users.image}>
                                                     <div className="w-12 bg-neutral-focus text-neutral-content">
                                                         <span>+{conversation.users.length - 2}</span>
                                                     </div>
@@ -377,7 +377,7 @@ export default function Chat() {
                                         {conversation.users.filter((user) => user.name !== session?.user?.name).map((users, index) => {
                                             if (index === conversation.users.filter((user) => user.name !== session?.user?.name).length - 1) {
                                                 return (
-                                                    <p className='mr-1 whitespace-nowrap text-xs'>{users.name}</p>
+                                                    <p key={users.name} className='mr-1 whitespace-nowrap text-xs'>{users.name}</p>
                                                 )
                                             }
 
@@ -387,7 +387,7 @@ export default function Chat() {
 
                                             else {
                                                 return (
-                                                    <p className='mr-1 whitespace-nowrap text-xs'>{users.name + ","}</p>
+                                                    <p key={users.name} className='mr-1 whitespace-nowrap text-xs'>{users.name + ","}</p>
                                                 )
                                             }
                                         })}
@@ -399,7 +399,7 @@ export default function Chat() {
 
                     else {
                         return (
-                            <div className='mt-1 flex select-none cursor-pointer' onClick={() => handleChooseConvo(conversation.id)}>
+                            <div key={conversation.id} className='mt-1 flex select-none cursor-pointer' onClick={() => handleChooseConvo(conversation.id)}>
                                 <div className='avatar-group flex items-center'>
                                     {conversation.users.filter((user) => user.name !== session?.user?.name).map((users, index) => {
                                         if (users.image === session?.user?.image) {
@@ -408,9 +408,9 @@ export default function Chat() {
 
                                         if (conversation.users.filter((user) => user.name !== session?.user?.name).length <= 2) {
                                             return (
-                                                <div className='avatar'>
+                                                <div className='avatar' key={users.image}>
                                                     <div className="w-12">
-                                                        <img src={users.image !== null ? users.image : "/profilepic.png"} />
+                                                        <Image src={users.image !== null ? users.image : "/profilepic.png"} alt='Profile Picture'/>
                                                     </div>
                                                 </div>
                                             )
@@ -428,7 +428,7 @@ export default function Chat() {
 
                                         else {
                                             return (
-                                                <div className="avatar placeholder">
+                                                <div className="avatar placeholder" key={users.image}>
                                                     <div className="w-12 bg-neutral-focus text-neutral-content">
                                                         <span>+{conversation.users.filter((user) => user.name !== session?.user?.name).length - 2}</span>
                                                     </div>
@@ -442,7 +442,7 @@ export default function Chat() {
                                         {conversation.users.filter((user) => user.name !== session?.user?.name).map((user, index) => {
                                             if (index === conversation.users.filter((user) => user.name !== session?.user?.name).length - 1) {
                                                 return (
-                                                    <p className='mr-1 whitespace-nowrap'>{user.name}</p>
+                                                    <p key={user.name} className='mr-1 whitespace-nowrap'>{user.name}</p>
                                                 )
                                             }
 
@@ -486,10 +486,10 @@ export default function Chat() {
                                 // <div className="chat chat-start">
                                 //     <div className="chat-bubble">{message.body}</div>
                                 // </div>
-                                <div className="chat chat-start">
+                                <div className="chat chat-start" key={message.senderId}>
                                     <div className="chat-image avatar">
                                         <div className="w-10 rounded-full">
-                                            <img src={message.sender.image ? message.sender.image : "/profilepic.png"} />
+                                            <Image src={message.sender.image ? message.sender.image : "/profilepic.png"} alt='Profile Picture'/>
                                         </div>
                                     </div>
                                     <div className="chat-header">
@@ -511,10 +511,10 @@ export default function Chat() {
                                 // <div className="chat chat-end">
                                 //     <div className="chat-bubble chat-bubble-info">{message.body}</div>
                                 // </div>
-                                <div className="chat chat-end">
+                                <div className="chat chat-end" key={message.sender.image}>
                                     <div className="chat-image avatar">
                                         <div className="w-10 rounded-full">
-                                            <img src={message.sender.image ? message.sender.image : "/profilepic.png"} />
+                                            <Image src={message.sender.image ? message.sender.image : "/profilepic.png"} alt='Profile Picture'/>
                                         </div>
                                     </div>
                                     <div className="chat-header">
