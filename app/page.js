@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import User from "./components/user";
 import { useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -14,7 +13,7 @@ export default function Home() {
     if (session?.status === "authenticated") {
       router.push("/dashboard");
     }
-  }, [session?.status, router]);
+  }, [session?.status]);
 
   return (
     <div className="h-screen flex items-center justify-center flex-col">
