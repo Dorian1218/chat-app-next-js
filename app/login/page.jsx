@@ -77,7 +77,7 @@ export default function Login() {
                     </button>
                 </div>
             </form>
-            <p>Don't have an account? <Link href={"/signup"} className='text-cyan-500 hover:text-cyan-700'>Sign up</Link></p>
+            <p>Don&apos;t have an account? <Link href={"/signup"} className='text-cyan-500 hover:text-cyan-700'>Sign up</Link></p>
         </div>
     )
 }
