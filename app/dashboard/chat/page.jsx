@@ -64,7 +64,6 @@ export default function Chat() {
     }, [])
 
     useEffect(() => {
-
         pusherClient.subscribe(toPusherKey(`user:${session?.user?.email}:incomingfriendreq`))
         pusherClient.subscribe(toPusherKey(`user:${session?.user?.email}:deletefriendreq`))
 
@@ -266,6 +265,17 @@ export default function Chat() {
                     }
                 })
                 setChatMsg("")
+            }).catch((e) => {
+                if (e?.response?.data){
+                    toast.error(e?.response?.data, {
+                        style: {
+                            borderRadius: '10px',
+                            background: '#333',
+                            color: '#fff',
+                        }
+                    })
+                    return
+                }
             })
             setDisableSendMsg(false)
         }
@@ -524,10 +534,10 @@ export default function Chat() {
                     })}
                 </div>
                 <div ref={div}></div>
-                <div className='flex w-full h-1/6 justify-end items-end'>
+                { selectedConvo.length !== 0 && <div className='flex w-full h-1/6 justify-end items-end'>
                     <input type="text" placeholder="Type here" className="input input-bordered input-secondary w-full mr-3" value={chatMsg} onChange={(e) => setChatMsg(e.target.value)} />
                     <button className="btn btn-info" onClick={sendMessage} disabled={disableSendMsg}><AiOutlineSend size={20} /></button>
-                </div>
+                </div>}
             </div>
         </div>
     )

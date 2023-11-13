@@ -17,6 +17,10 @@ export async function POST(req) {
         }
     })
 
+    if (conversationId == undefined) {
+        return new NextResponse("You did not select a conversation", {status: 400})
+    }
+
     const newMessage = await prisma.message.create({
         data: {
             body: message,

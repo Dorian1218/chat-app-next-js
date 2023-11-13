@@ -21,12 +21,12 @@ export default function Home() {
       <h1 className="m-5 text-2xl text-center">Welcome to the Chat App</h1>
       <div className="w-screen flex items-center justify-center mb-2">
         <Link href={"/signup"}>
-          <button className="btn btn-active btn-primary mr-5 max-w-1/4">
+          <button className="btn btn-active btn-primary mr-5 max-w-1/4" disabled={session?.status == "loading"}>
             Sign Up
           </button>
         </Link>
         <Link href={"/login"}>
-          <button className="btn btn-outline btn-primary max-w-1/4">
+          <button className="btn btn-outline btn-primary max-w-1/4" disabled={session?.status == "loading"}>
             Login
           </button>
         </Link>
