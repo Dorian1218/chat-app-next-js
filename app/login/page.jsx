@@ -56,9 +56,35 @@ export default function Login() {
         setDisabled(false)
     }
 
-    const signInWithGoogle = async () => {
+    const signInWithGoogle = () => {
 
-        await signIn("google")
+        signIn("google").then((callback) => {
+            if (callback?.error) {
+                toast.error(callback.error, {
+                    style: {
+                        borderRadius: '10px',
+                        background: '#333',
+                        color: '#fff',
+                    }
+                })
+            }
+            else {
+                setLoading(true)
+                setButtonText("Loading")
+                setDisabled(true)
+                toast.success("You have succesfully logged in", {
+                    style: {
+                        borderRadius: '10px',
+                        background: '#333',
+                        color: '#fff',
+                    }
+                })
+            }
+        })
+        setData({ ...data, password: "", email: "" })
+        setLoading(false)
+        setButtonText("Login")
+        setDisabled(false)
     }
     return (
         <div className='h-screen flex justify-center items-center flex-col '>
@@ -72,7 +98,7 @@ export default function Login() {
                     <input type="email" placeholder="Email" value={data.email} onChange={(e) => setData({ ...data, email: e.target.value })} className="input input-bordered input-primary max-w-xs mb-5 mt-5" style={{ width: "70vw" }} required />
                     <input type="password" placeholder="Password" value={data.password} onChange={(e) => setData({ ...data, password: e.target.value })} className="input input-bordered input-primary max-w-xs mb-5" style={{ width: "70vw" }} required autoComplete="on" />
                     <button className="btn btn-active btn-secondary ml-auto max-w-xs" style={{ width: "70vw" }} onClick={loginUser} disabled={disabled}>
-                    {loading && <span className="loading loading-spinner"></span>}
+                        {loading && <span className="loading loading-spinner"></span>}
                         {buttonText}
                     </button>
                 </div>

@@ -1,6 +1,7 @@
+"use server"
+
 import { NextResponse } from "next/server"
 import { PrismaClient } from "@prisma/client"
-import { getServerSession } from "next-auth"
 
 export async function POST(req){
 

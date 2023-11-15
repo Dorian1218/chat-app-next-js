@@ -1,10 +1,10 @@
+"use server"
+
 import { NextResponse } from "next/server"
 import { PrismaClient } from "@prisma/client"
-import { getSession } from "next-auth/react"
 import { getServerSession } from "next-auth"
 import { authOptions } from "../auth/[...nextauth]/route"
 import { pusherServer } from "@/app/libs/pusherserver"
-import { toPusherKey } from "@/app/libs/utils"
 
 export async function POST(req) {
     const prisma = new PrismaClient()
